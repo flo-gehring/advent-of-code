@@ -39,9 +39,7 @@ def move_guard_and_mark_positions(area):
     total_steps = 0
     direction = initial_movement
     position = (initial_y, initial_x)
-    while True:
-        if not in_area(position[0], position[1], area):
-            break
+    while in_area(position[0], position[1], area):
         area[position[0]][position[1]] = "X"
         direction = calculate_next_direction(position, direction, area)
         position = add_tuple(position, direction)
@@ -89,20 +87,6 @@ def check_if_loops(initialPosition: Tuple[int,int], initialDirection: Tuple[int,
         if steps_taken > size + 1:
             return True
         steps_taken += 1
-    
-def get_last_index(list, elem): 
-    path_reversed = list[::-1]
-    first_index_path_reversed = path_reversed.index(elem)
-    return len(path_reversed) - first_index_path_reversed -1 
-
-def is_sublist(sublist, test_list) -> bool:
-    res = False
-    for idx in range(len(test_list) - len(sublist) + 1):
-        if test_list[idx: idx + len(sublist)] == sublist:
-            res = True
-            break
-    return res
-
 
 def count_obstacles_causing_loop(area)-> int:
     loops = 0
@@ -133,7 +117,6 @@ def count_steps(area):
             if cell == "X":
                 counter += 1
     return counter
-
 
 # Part 1
 area_puzzle_1 = copy_area(input_area)
