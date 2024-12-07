@@ -35,19 +35,14 @@ def rotate(y,x):
 
 def step_and_mark(area): 
     total_steps = 0
-    y,x = (initial_y, initial_x)
-    (y_movement, x_movement) = initial_movement
+    direction = initial_movement
+    position = (initial_y, initial_x)
     while True:
-        area[y][x] = "X"
-        x_pos_in_front = x + x_movement
-        y_pos_in_front = y + y_movement
-        if not in_area(y_pos_in_front, x_pos_in_front, area):
+        if not in_area(position[0], position[1], area):
             break
-        next_field = area[y_pos_in_front][x_pos_in_front]
-        if next_field == "#":
-            y_movement, x_movement = rotate(y_movement, x_movement)
-        x = x + x_movement
-        y = y + y_movement
+        area[position[0]][position[1]] = "X"
+        direction = calculate_next_direction(position, direction, area)
+        position = add_tuple(position, direction)
         total_steps += 1
     return total_steps
 
@@ -58,32 +53,47 @@ directional_marker = {
         (0,-1): "<"
 }
 
-def scan_ahead(area, currY, currX, initial_direction) -> Optional[Tuple[int, int]]:
-    y_direction, x_direction = rotate(initial_direction[0], initial_direction[1])
-    obstacle_y = currY + initial_direction[0]
-    obstacle_x = currX + initial_direction[1]
-    obstacle_y_x = (obstacle_y, obstacle_x)
-    if area[obstacle_y][obstacle_x] == "#":
+def add_tuple(t1: Tuple[int, int], t2: Tuple[int,int]) -> Tuple[int,int]:
+    return (t1[0] + t2[0], t1[1] + t2[1])
+
+def calculate_next_direction(position: Tuple[int,int], direction: Tuple[int,int], area: List[List[str]]) -> Optional[Tuple[int, int]]:
+    current_direction = direction
+    for _ in range(4):
+        possible_next_pos = add_tuple(position, current_direction)
+        if not in_area(possible_next_pos[0], possible_next_pos[1], area) or \
+                area[possible_next_pos[0]][possible_next_pos[1]] != "#":
+            return current_direction
+        current_direction = rotate(current_direction[0], current_direction[1])
+    return None
+
+
+def copy_area(area):
+    return [row.copy() for row in area]
+
+def place_obstacle_in_front(area: List[List[str]], initial_position: Tuple[int,int], initial_direction: Tuple[int, int]) -> Optional[Tuple[int, int]]:
+    obstacle_y_x = add_tuple(initial_position, initial_direction)
+    if not in_area(obstacle_y_x[0], obstacle_y_x[1], area):
         return None
-    x = currX
-    y = currY
-    path = [(y,x)]
-    positions = set([(y,x)])
+    path = [initial_position]
+    positions = set([initial_position])
+    position = initial_position
+    direction = initial_direction
+
+    char_at_obstacle = area[obstacle_y_x[0]][obstacle_y_x[1]]
+    area[obstacle_y_x[0]][obstacle_y_x[1]] = "#"
     while True:
-        next_x = x + x_direction
-        next_y = y + y_direction
-        if not in_area(next_y, next_x, area):
+        direction = calculate_next_direction(position, direction, area)
+        if not direction:
+            area[obstacle_y_x[0]][obstacle_y_x[1]] = char_at_obstacle
+            return obstacle_y_x
+        position = add_tuple(direction, position)
+        if not in_area(position[0], position[1], area):
+            area[obstacle_y_x[0]][obstacle_y_x[1]] = char_at_obstacle
             return None
-        next_field = area[next_y][next_x]
-        if next_field == "#" or (next_y, next_x) == obstacle_y_x :
-            y_direction, x_direction = rotate(y_direction, x_direction)
-        x = x + x_direction
-        y = y + y_direction
-        y_x = (y, x)
         #if area[y][x] == directional_marker[(y_movement, x_movement)]:
         #    return obstacle_y_x
-        if y_x in positions:
-            last_index_y_x = get_last_index(path, y_x)
+        if position in positions:
+            last_index_y_x = get_last_index(path, position)
             possible_loop = path[last_index_y_x+1:]
             path_before_loop = path[:last_index_y_x]
             if is_sublist(possible_loop, path_before_loop):
@@ -92,9 +102,10 @@ def scan_ahead(area, currY, currX, initial_direction) -> Optional[Tuple[int, int
                     #print(f"lenpath {len(path)}, {y_x}, possible loop {possible_loop}" )
                     print(f"len path {len(path)} {last_index_y_x} {len(possible_loop)} {len(path_before_loop)}")
                     #print(f" last_index_xy {last_index_y_x} path_before_loop {path_before_loop}")
+                area[obstacle_y_x[0]][obstacle_y_x[1]] = char_at_obstacle
                 return obstacle_y_x
-        path.append(y_x)
-        positions.add(y_x)
+        path.append(position)
+        positions.add(position)
     
 def get_last_index(list, elem): 
     path_reversed = list[::-1]
@@ -110,24 +121,23 @@ def is_sublist(sublist, test_list) -> bool:
     return res
 
 
-def step_and_mark_directional(area )-> List[Tuple[int,int]]:
+def find_obstacles(area)-> List[Tuple[int,int]]:
     possible_loop = []
     y,x = (initial_y, initial_x)
-    (y_direction, x_direction) = initial_movement
     finished_steps = 0
+    direction = initial_movement
+    position = (y,x)
     while True:
-        possible_next_x_pos = x + x_direction
-        possible_next_y_pos = y + y_direction
-        if not in_area(possible_next_y_pos, possible_next_x_pos, area):
-            break
-        next_field = area[possible_next_y_pos][possible_next_x_pos]
-        if next_field == "#":
-            y_direction, x_direction = rotate(y_direction, x_direction)
-        obstacle_would_loop = scan_ahead(area, y, x, (y_direction, x_direction))
+        direction = calculate_next_direction(position, direction, area)
+        if not direction:
+            raise Exception("Guard is stuck in a loop where he should not be")
+        obstacle_would_loop = place_obstacle_in_front(area, position, direction)
         if obstacle_would_loop:
             possible_loop.append(obstacle_would_loop)
-        x = x + x_direction
-        y = y + y_direction
+        position = add_tuple(position, direction)
+        if not in_area(position[0], position[1], area):
+            break
+       
         finished_steps += 1
     return possible_loop
 
@@ -140,10 +150,10 @@ def print_area(area):
         result += "\n"
     print(result)
 # print_area()
-area_puzzle_1 = [row.copy() for row in input_area]
+area_puzzle_1 = copy_area(input_area)
 total_steps = step_and_mark(area_puzzle_1)
 # print()
-# print_area(area)
+print_area(area_puzzle_1)
 def count_steps(area):
     counter = 0
     for row in area:
@@ -153,8 +163,8 @@ def count_steps(area):
     return counter
 print("Steps Part 1", count_steps(area_puzzle_1))
 
-area_for_part_2 = [row.copy() for row in input_area]
-possible_loops = step_and_mark_directional(area_for_part_2)
+area_for_part_2 = copy_area(input_area)
+possible_loops = find_obstacles(area_for_part_2)
 possible_loops = [pl for pl in possible_loops if pl != (initial_y, initial_x)]
 set_possible_loops = set(possible_loops)
 
@@ -168,6 +178,7 @@ if test:
 print("Possible loops", len(possible_loops), len(set_possible_loops))
 
 
-# Falsche Antworten: 1495, 1496
+# Falsche Antworten: 1495, 1496, 1614 (Mit neuer rotate methode)
 # Möglich: 
 #   - 1569, aber da sind Duplikate mit dabei 
+#   - 1699, aber da sind Duplikate dabei
