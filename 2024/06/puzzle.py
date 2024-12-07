@@ -1,5 +1,7 @@
 from typing import Tuple, Optional, List
-area = [list(l.strip()) for l in open("2024/06/input_test.txt").readlines()]
+test = True
+path = "2024/06/input_test.txt" if test else "2024/06/input.txt"
+input_area = [list(l.strip()) for l in open(path).readlines()]
 
 guard_chars = ["^", ">", "v", "<"]
 print()
@@ -9,8 +11,8 @@ def get_guard_position(area) -> Tuple[int, int]:
             if cell in guard_chars:
                 return (y_index, x_index)
 
-initial_y, initial_x = get_guard_position(area)
-initial_guard_char  =area[initial_y][initial_x]
+initial_y, initial_x = get_guard_position(input_area)
+initial_guard_char  =input_area[initial_y][initial_x]
 movement = {
     "^": (-1, 0),
     ">": (0, 1),
@@ -70,32 +72,46 @@ def scan_ahead(area, currY, currX, currDirection) -> Optional[Tuple[int, int]]:
     if in_area(obstacle_y, obstacle_x, area):
         if in_area(y, x, area):
             while True:
-                x_pos_in_front = x + x_movement
-                y_pos_in_front = y + y_movement
-                if not in_area(y_pos_in_front, x_pos_in_front, area):
+                next_x = x + x_movement
+                next_y = y + y_movement
+                if not in_area(next_y, next_x, area):
                     return None
-                next_field = area[y_pos_in_front][x_pos_in_front]
-                if next_field == "#" or (y_pos_in_front, x_pos_in_front) == obstacle_y_x :
+                next_field = area[next_y][next_x]
+                if next_field == "#" or (next_y, next_x) == obstacle_y_x :
                     y_movement, x_movement = rotate(y_movement, x_movement)
                 x = x + x_movement
                 y = y + y_movement
                 y_x = (y, x)
-                if area[y][x] == directional_marker[(y_movement, x_movement)]:
-                    return obstacle_y_x
+                #if area[y][x] == directional_marker[(y_movement, x_movement)]:
+                #    return obstacle_y_x
                 if y_x in positions:
-                    len_path = len(path)
-                    last_index_y_x = len_path - 1 - path[::-1].index(y_x)
+                    last_index_y_x = get_last_index(path, y_x)
                     possible_loop = path[last_index_y_x+1:]
-                    len_possible_loop = len(possible_loop)
-                    path_to_y_x = path[last_index_y_x - len_possible_loop:last_index_y_x]
-                    if path_to_y_x == possible_loop:
+                    path_before_loop = path[:last_index_y_x]
+                    if is_sublist(possible_loop, path_before_loop):
+                        if test:
+                            # print(path)
+                            #print(f"lenpath {len(path)}, {y_x}, possible loop {possible_loop}" )
+                            print(f"len path {len(path)} {last_index_y_x} {len(possible_loop)} {len(path_before_loop)}")
+                            #print(f" last_index_xy {last_index_y_x} path_before_loop {path_before_loop}")
                         return obstacle_y_x
                 path.append(y_x)
                 positions.add(y_x)
-                    
     else:
         return None
+    
+def get_last_index(list, elem): 
+    path_reversed = list[::-1]
+    first_index_path_reversed = path_reversed.index(elem)
+    return len(path_reversed) - first_index_path_reversed -1 
 
+def is_sublist(sublist, test_list) -> bool:
+    res = False
+    for idx in range(len(test_list) - len(sublist) + 1):
+        if test_list[idx: idx + len(sublist)] == sublist:
+            res = True
+            break
+    return res
 
 
 def step_and_mark_directional(area )-> List[Tuple[int,int]]:
@@ -116,18 +132,22 @@ def step_and_mark_directional(area )-> List[Tuple[int,int]]:
             possible_loop.append(obstacle_would_loop)
         x = x + x_movement
         y = y + y_movement
-        area[y][x] = directional_marker[(y_movement, x_movement)]
         finished_steps += 1
-        print("Finished Step" + str(finished_steps) + " of " + str(total_steps))
     return possible_loop
 
 
 def print_area(area):
+    result = ""
     for row in area:
-        print(row)
+        for cell in row:
+            result += cell
+        result += "\n"
+    print(result)
 # print_area()
-total_steps = step_and_mark([row.copy() for row in area])
-possible_loops = step_and_mark_directional(area)
+area_copy = [row.copy() for row in input_area]
+area_puzzle_1 = [row.copy() for row in input_area]
+total_steps = step_and_mark(area_puzzle_1)
+possible_loops = step_and_mark_directional(area_copy)
 possible_loops = [pl for pl in possible_loops if pl != (initial_y, initial_x)]
 possible_loops = set(possible_loops)
 # print()
@@ -139,10 +159,15 @@ def count_steps(area):
             if cell == "X":
                 counter += 1
     return counter
-print(count_steps(area))
-# print(possible_loops)
+print(count_steps(area_puzzle_1))
+if test:
+    print(possible_loops)
 for pl in possible_loops:
-    area[pl[0]][pl[1]] = "0"
-# print_area(area)
+    area_copy[pl[0]][pl[1]] = "0"
+if test:
+    print_area(area_copy)
 print (None in possible_loops)
 print(len(possible_loops))
+
+
+# Wrong Answers; 1495
