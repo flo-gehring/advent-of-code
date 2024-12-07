@@ -1,5 +1,6 @@
 from typing import Tuple, Optional, List
 test = False
+
 path = "2024/06/input_test.txt" if test else "2024/06/input.txt"
 input_area = [list(l.strip()) for l in open(path).readlines()]
 
@@ -107,6 +108,22 @@ def place_obstacle_in_front(area: List[List[str]], initial_position: Tuple[int,i
         path.append(position)
         positions.add(position)
     
+def check_if_loops(initialPosition: Tuple[int,int], initialDirection: Tuple[int,int], area: List[List[str]]) -> bool:
+    direction = initialDirection
+    position = initialPosition
+    size =  len(area) * len(area[0])
+    steps_taken = 0
+    while True:
+        direction = calculate_next_direction(position, direction, area)
+        if not direction:
+            return True
+        position = add_tuple(direction, position)
+        if not in_area(position[0], position[1], area):
+            return False
+        if steps_taken > size + 1:
+            return True
+        steps_taken += 1
+    
 def get_last_index(list, elem): 
     path_reversed = list[::-1]
     first_index_path_reversed = path_reversed.index(elem)
@@ -121,25 +138,19 @@ def is_sublist(sublist, test_list) -> bool:
     return res
 
 
-def find_obstacles(area)-> List[Tuple[int,int]]:
-    possible_loop = []
-    y,x = (initial_y, initial_x)
-    finished_steps = 0
-    direction = initial_movement
-    position = (y,x)
-    while True:
-        direction = calculate_next_direction(position, direction, area)
-        if not direction:
-            raise Exception("Guard is stuck in a loop where he should not be")
-        obstacle_would_loop = place_obstacle_in_front(area, position, direction)
-        if obstacle_would_loop:
-            possible_loop.append(obstacle_would_loop)
-        position = add_tuple(position, direction)
-        if not in_area(position[0], position[1], area):
-            break
-       
-        finished_steps += 1
-    return possible_loop
+def find_obstacles(area)-> int:
+    loops = 0
+    approx_loops = len(area) * len(area[0]) 
+    for y in range(len(area)): 
+        for x in range(len(area[y])):
+            char = area[y][x]
+            if (y,x) != (initial_y, initial_x) and char != "#":
+                area[y][x] = "#"
+                if check_if_loops((initial_y, initial_x), initial_movement, area):
+                    loops += 1
+            area[y][x] = char
+            print(f"Finished {y * len(area[0])  + x   } / {approx_loops} ({(y * len(area[0])  + x) / approx_loops * 100 }%)")
+    return loops
 
 
 def print_area(area):
@@ -165,17 +176,14 @@ print("Steps Part 1", count_steps(area_puzzle_1))
 
 area_for_part_2 = copy_area(input_area)
 possible_loops = find_obstacles(area_for_part_2)
-possible_loops = [pl for pl in possible_loops if pl != (initial_y, initial_x)]
-set_possible_loops = set(possible_loops)
+
 
 if test:
     print(possible_loops)
-for pl in possible_loops:
-    area_for_part_2[pl[0]][pl[1]] = "0"
 if test:
     print_area(area_for_part_2)
 
-print("Possible loops", len(possible_loops), len(set_possible_loops))
+print("Possible loops", possible_loops)
 
 
 # Falsche Antworten: 1495, 1496, 1614 (Mit neuer rotate methode)
