@@ -11,12 +11,14 @@ def test_op_sequence(test_value: int, operands: List[int], operators: List[str])
             result = result + num
         elif op == "*":
             result = result * num
+        elif op == "||":
+            result = int(str(result) + str(num))
         else :
             raise Exception("Unknown Op: " + op )
     return test_value == result
 
 def testEquations(test_value: int, operands: List[int]) -> bool:
-    operators = ["+", "*"]
+    operators = ["+", "*", "||"]
     op_sequences = list(product(operators, repeat=len(operands)-1)) 
     
     return any([test_op_sequence(test_value, operands, ops) for ops in op_sequences])
