@@ -1,10 +1,10 @@
-from typing import List
+from typing import List, Iterable
 from itertools import  product
 equations = [line.strip() for line in open("2024/07/input.txt")]
 equations = [line.split(":") for line in equations]
 equations = [(int(eq[0]), [ int(op.strip()) for op in eq[1].split()]) for eq in equations]
 
-def test_op_sequence(test_value: int, operands: List[int], operators: List[str]) -> bool:
+def test_op_sequence(test_value: int, operands: List[int], operators: Iterable[str]) -> bool:
     result = operands[0]
     for (num, op) in zip(operands[1:], operators):
         if op == "+":
@@ -18,8 +18,7 @@ def test_op_sequence(test_value: int, operands: List[int], operators: List[str])
     return test_value == result
 
 def test_equations(test_value: int, operands: List[int], operators=["+", "*", "||"]) -> bool:
-    op_sequences = list(product(operators, repeat=len(operands)-1)) 
-    
+    op_sequences = product(operators, repeat=len(operands)-1) 
     return any([test_op_sequence(test_value, operands, ops) for ops in op_sequences])
 
 # Part 1
