@@ -14,10 +14,9 @@ def get_antenna_locations(antenna_type: str, grid: list[str]) -> list[tuple[int,
                 result.append((y,x))
     return result
 
-def calculate_antinodes(antenna_locations: list[tuple[int,int]]) -> list[tuple[int,int]]:
+def calculate_antinodes_puzzle_part_1(antenna_locations: list[tuple[int,int]]) -> list[tuple[int,int]]:
     antenna_combinations = combinations(antenna_locations, r=2)
     result = []
-
     for (antenna1, antenna2) in antenna_combinations:
         print(antenna1, antenna2)
         result += calculate_antinodes_for_antennas_part1(antenna1, antenna2)
@@ -42,7 +41,7 @@ def part_1(grid: list[str]):
     for antenna_type in antenna_types:
         antinode_locations_antenna = [
             (y, x) for (y,x) in 
-            calculate_antinodes(get_antenna_locations(antenna_type, grid))
+            calculate_antinodes_puzzle_part_1(get_antenna_locations(antenna_type, grid))
             if y < grid_y_size and y >= 0 and x < grid_x_size and x >= 0
         ]
         antinode_locations = antinode_locations.union(antinode_locations_antenna)
