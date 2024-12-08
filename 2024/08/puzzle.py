@@ -20,7 +20,7 @@ def calculate_antinodes(antenna_locations: list[tuple[int,int]]) -> list[tuple[i
 
     for (antenna1, antenna2) in antenna_combinations:
         print(antenna1, antenna2)
-        result += calculate_antinodes_for_antennas(antenna1, antenna2)
+        result += calculate_antinodes_for_antennas_part1(antenna1, antenna2)
     return result
 
 def add_vector(lhs: tuple[int,int], rhs: tuple[int,int]) -> tuple[int,int]: 
@@ -29,11 +29,10 @@ def add_vector(lhs: tuple[int,int], rhs: tuple[int,int]) -> tuple[int,int]:
 def scalar_mult(v: tuple[int,int], s: int) -> tuple[int,int]:
     return (v[0] * s, v[1] * s)
 
-def calculate_antinodes_for_antennas(antenna1: tuple[int, int], antenna2: tuple[int,int])->list[tuple[int,int]]:
+def calculate_antinodes_for_antennas_part1(antenna1: tuple[int, int], antenna2: tuple[int,int])->list[tuple[int,int]]:
     vec_a1_a2 = add_vector(antenna2, scalar_mult(antenna1, -1))
     vec_a2_a1 = scalar_mult(vec_a1_a2, -1)
     return [add_vector(antenna2, vec_a1_a2), add_vector(antenna1, vec_a2_a1)] 
-
 
 def part_1(grid: list[str]):
     antinode_locations = set()
@@ -46,13 +45,6 @@ def part_1(grid: list[str]):
             calculate_antinodes(get_antenna_locations(antenna_type, grid))
             if y < grid_y_size and y >= 0 and x < grid_x_size and x >= 0
         ]
-        print(
-            "Antenna Locations " , antenna_type, get_antenna_locations(antenna_type, grid)
-        )
-        print(
-            "Antinode Locations " , antenna_type, antinode_locations
-        )
-
         antinode_locations = antinode_locations.union(antinode_locations_antenna)
     return antinode_locations
 
@@ -61,11 +53,13 @@ def mark_locations_on_grid(grid: list[str], locations: list[tuple[int,int]], mar
     for (y,x) in locations:
         grid_copy[y][x] = marker
     return ["".join(row) for row in grid_copy]
+
 def pretty_grid(grid: list[str]) -> str:
     result = ""
     for row in grid:
         result += row + "\n"
     return result
+
 locations = part_1(input)
 print(locations)
 marked_locations = mark_locations_on_grid(input, locations, "#")
