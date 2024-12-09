@@ -12,7 +12,7 @@ def checksum_calc(index_on_disk: int, file_id: int, num_blocks: int) -> int:
     checksum_list =  [(block_on_file , int(file_id)) for block_on_file in 
                     range(index_on_disk, index_on_disk + num_blocks )
                 ]
-    print(index_on_disk, file_id, num_blocks, checksum_list)
+    print(checksum_list)
     return sum([x *y for (x,y) in checksum_list])
 
     
@@ -34,13 +34,13 @@ def part1(input):
         if is_file(index_input_string):
             print("File", " idx input", index_input_string, "file id", file_id(index_input_string))
             checksum += checksum_calc(index_on_disk, file_id(index_input_string), block_count)
+            input[index_input_string] = 0
             index_on_disk += block_count
-            input[index_input_string]= 0
         else: 
-            free_blocks = input[index_input_string]
+            free_blocks = block_count
             print("Free Space", block_count)
             while free_blocks > 0: 
-                if input[index_of_rightmost_file] <= free_blocks:
+                if remaining_blocks_of_rightmost_file <= free_blocks:
                     print("All Free Blocks")
                     checksum += checksum_calc(index_on_disk, file_id(index_of_rightmost_file), remaining_blocks_of_rightmost_file)
                     index_on_disk += remaining_blocks_of_rightmost_file
@@ -54,6 +54,7 @@ def part1(input):
                         index_on_disk, file_id(index_of_rightmost_file), free_blocks
                     )
                     index_on_disk += free_blocks
+                    remaining_blocks_of_rightmost_file -= free_blocks
                     input[index_of_rightmost_file] -= free_blocks
                     free_blocks = 0 # implicit break
 
