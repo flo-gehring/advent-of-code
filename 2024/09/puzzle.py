@@ -1,8 +1,5 @@
-from typing import Optional
-from sortedcontainers import SortedDict, SortedList
-input = open("2024/09/input_test.txt").read()
+input = open("2024/09/input.txt").read()
 
-print(len(input))
 def is_file(index: int) -> bool:
     return index % 2 == 0
 
@@ -54,70 +51,56 @@ def part1(input):
                     break
     return checksum
 
-def pretty_print_drive(drive_layout: SortedDict):
-    print(drive_layout)
-    sorted_by_disk = SortedList(drive_layout.items(), key=lambda x: x[1][0]) 
-    s = ""
-    for i in range(len(sorted_by_disk) -1):
-        current_file, next_file =sorted_by_disk[i], sorted_by_disk[i+1]
-        current_index = current_file[1][0]
-        file = current_file[0]
-        next_index = next_file[1][0]
-        current_block_count = current_file[1][1]
-        s += str(file) * current_block_count + "." * (next_index - (current_index + current_block_count))
-    last_file = sorted_by_disk[-1]
-    s += str(last_file[0]) * last_file[1][1]
-    return s
+
+def calculate_checksum_part2(drive_layout):
+    index_on_disk = 0
+    checksum = 0
+    for (file, block_count) in drive_layout:
+        if file != -1:
+            checksum += checksum_calc(index_on_disk, file, block_count)
+        index_on_disk += block_count
+    return checksum
 
 def part2(input):
     input = [int(char) for char in input]
-    # Build initial Disk Layout, save file ids and the block range in a sorted container (sorted dict) where the block numbers are 
-    # also stored
-    
     index_on_disk = 0
-    drive_layout = SortedDict()
-    # Create a dictionary, where for each free block count a list of available indices can be looked up
-    free_space = dict([(free_blocks, SortedList()) for free_blocks in range(10)])
-    for (index_input_string, block_count) in enumerate(input):
+    drive_layout = [    ]
+    for (index_input_string, blocks_of_file) in enumerate(input):
         if is_file(index_input_string):
-            drive_layout[file_id(index_input_string)] = (index_on_disk, block_count)
-            index_on_disk += block_count
+            drive_layout.append( (file_id(index_input_string), blocks_of_file))
+            index_on_disk += blocks_of_file
         else: 
-            free_space[block_count].add(index_on_disk)
-            index_on_disk += block_count
-    input_len = len(input)
-    for reverse_skip_index_dont_ask, block_count in enumerate(input[::-2]):
-        index_on_disk = (input_len-1) - 2 * reverse_skip_index_dont_ask
-        # Try to move File to the left
-        location = find_index_in_free_space(block_count, free_space)
-        if location is None:
-            continue
-        (free_space_dict_key, disk_index_start_free_space)  = location
-        drive_layout[file_id(index_on_disk)] = (disk_index_start_free_space, block_count)
-        free_space[free_space_dict_key].remove(disk_index_start_free_space)
-        free_space[free_space_dict_key - block_count].add(disk_index_start_free_space + block_count)
-    return  drive_layout, sum([checksum_calc(iod, file, n_blocks) for (file, (iod, n_blocks)) in drive_layout.items()])
-
-
-def find_index_in_free_space(block_count: int, free_space: dict[int, SortedList]) -> Optional[tuple[int, int]]:
-    """Returns the block_count of the dict and the index on disk. None if nothing fits
-    """
-    leftmost_spot_per_free_block_count = [
-        (free_blocks, free_space[free_blocks][0]) for free_blocks in range(block_count, 10)
-        if len(free_space[free_blocks]) != 0
-    ]
-    if len(leftmost_spot_per_free_block_count) == 0:
-        return None
-    return sorted(leftmost_spot_per_free_block_count, key=lambda x: x[1])[0]
+            drive_layout.append((-1, blocks_of_file))
+    for file in list(range( int(len(input) /2 +1)))[::-1]:
+            layout_def = [x for x in drive_layout if x[0] == file][0]
+            index = drive_layout.index(layout_def)
+            drive_layout.pop(index)
+            blocks_of_file = layout_def[1]
+            for (idx, (f_id, freeblocks)) in enumerate(drive_layout[:index]):
+                if freeblocks >= blocks_of_file and f_id == -1:
+                    insert = [layout_def]
+                    if blocks_of_file < freeblocks:
+                        insert.append( (-1,   freeblocks -blocks_of_file))
+                    new_drive_layout = []
+                    drive_layout.insert(index, (-1, blocks_of_file))
+                    drive_layout_split_left  = drive_layout[:idx].copy()
+                    drive_layout_split_right = drive_layout[idx+1:]
+                    new_drive_layout.extend(drive_layout_split_left)
+                    new_drive_layout.extend(insert)
+                    new_drive_layout.extend(drive_layout_split_right)
+                    drive_layout = new_drive_layout
+                    break
+            else:
+                drive_layout.insert(index, layout_def )
+    return  calculate_checksum_part2(drive_layout)
     
-
-
 
 print("Solution Part 1", part1(input))
 # Wrong: 6485877793755 (too high)
 # Correct: 6344673854800
-drive_layout, checksum = part2(input)
-# Wrong: 8515929533392 (too high)
-#        9997826754152
-print(pretty_print_drive(drive_layout))
-print(checksum)
+
+# Wrong:        8515929533392 (too high)
+#               9997826754152
+# Wrong :       6356335200500 (too low)
+# Correct:      6360363199987
+print("Solution Part 2", part2(input))
