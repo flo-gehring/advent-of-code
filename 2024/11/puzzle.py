@@ -24,7 +24,6 @@ def part1(input: list[int], num_blinks:int) -> list[int]:
         input = blink(input)
     return input 
 
-
 def blink_stone(stone: int, num_blinks: int) -> int:
     str_stone = str(stone)
     half = int(len(str_stone) / 2)
@@ -44,7 +43,6 @@ def blink_stone_lookup(stone, lookup_table: dict[int, dict[int, int]], num_blink
         return 1
     if stone in lookup_table:
         if num_blinks in lookup_table[stone]:
-            print("Hit!")
             return lookup_table[stone][num_blinks]
     else:
         lookup_table[stone] = dict()
@@ -83,6 +81,4 @@ def part2(input, num_blinks=75):
 
 stones = part1(input, 25)
 print("Solution Part 1", len(stones))
-print("Soltution Part 2 lookup", blink_stones_lookup(input, num_blinks=75))
-print("Solution Part 2", part2(input, num_blinks=25))
-    
+print("Soltution Part 2", blink_stones_lookup(input, num_blinks=75))
