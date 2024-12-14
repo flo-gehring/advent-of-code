@@ -12,7 +12,6 @@ def walk_trail(y: int, x:int, input: list[list[int]]) -> list[tuple[int,int]]:
             continue
         if input[next_y][next_x] - input[y][x] == 1:
             reachable_nines.extend(walk_trail(next_y, next_x, input))
-        
     return set(reachable_nines)
 
 def part1(input):
@@ -22,7 +21,6 @@ def part1(input):
             if num == 0:
                 reachable_nines = walk_trail(y,x,input)
                 score += len(set(reachable_nines))
-
     return score
 
 def find_num_paths(y: int, x:int, input: list[list[int]]) -> int:
