@@ -1,7 +1,6 @@
-path = "2024/12/input_test.txt"
+path = "2024/12/input.txt"
 input = [[c for c in line.strip()] for line in open(path).readlines()]
 types_of_plants = set([c for c in open(path).read().strip() if c != "\n"])
-
 
 
 def add_tuples(lhs: tuple[int,int], rhs: tuple[int,int]) -> tuple[int,int]:
@@ -9,8 +8,8 @@ def add_tuples(lhs: tuple[int,int], rhs: tuple[int,int]) -> tuple[int,int]:
 
 
 class Region:
-    def __init__(self, plant):
-        self.coordinates = set()
+    def __init__(self, plant, coordinates):
+        self.coordinates = set(coordinates)
         self.plant = plant
 
     def add(self, coord:tuple[int,int] ):
@@ -24,7 +23,7 @@ class Region:
             [Region.count_fence_segment(map, c, self.plant) for c in self.coordinates]
         )
         return fence_segments * len(self.coordinates)
-    
+
     staticmethod 
     def count_fence_segment( map: list[list[str]], coordinate: tuple[int,int], plant: str):
         return Region.add_fence_segment(map,add_tuples(coordinate, (-1,0)), plant)  +  \
@@ -42,14 +41,11 @@ class Region:
             return 1
         return 0
         
-        
-
 def get_from(input, tuple):
     return input[tuple[0]][tuple[1]]
 
 def in_input(input, tuple):
     return tuple[0] >= 0 and tuple[0] < len(input) and tuple[1] >= 0 and tuple[1] < len(input[tuple[0]])
-
 
 def print_regions(input, regions: list[Region] ) -> str:
     result = ""
@@ -64,6 +60,31 @@ def print_regions(input, regions: list[Region] ) -> str:
         result += "\n"
     return result
 
+
+def get_adjacent(input, coord, plant):
+    directions = [(1,0),(0,1),(-1,0),(0,-1)]
+    result = []
+    for dir in directions:
+        if in_input(input, add_tuples(coord, dir)):
+            p = get_from(input, add_tuples(coord, dir))
+            if p == plant:
+                result.append(add_tuples(coord, dir))
+    return result
+
+def create_region(input: list[str], coord: tuple[int,int]) -> Region:
+    coords_to_add = [coord]
+    already_added = set()
+    already_added.add(coord)
+    plant = get_from(input, coord)
+    while coords_to_add:
+        next_coord = coords_to_add.pop()
+        next_adjacent = set(get_adjacent(input, next_coord, plant))
+        new_adjacents= next_adjacent - already_added
+        coords_to_add.extend(new_adjacents)
+        already_added = already_added.union(new_adjacents)
+    return Region(plant, already_added)
+        
+
 cost_per_plant = dict()
 all_regions: list[Region] = []
 for type_of_plant in types_of_plants:
@@ -72,63 +93,14 @@ for type_of_plant in types_of_plants:
     for (y, row) in enumerate(input):
         for (x, cell) in enumerate(row):
             current_coord = (y,x)
-            if cell == type_of_plant:
-                region = None
-                down = add_tuples(current_coord, (1,0))
-                right = add_tuples(current_coord, (0,1))
-                up = add_tuples(current_coord, (-1,0))
-                left = add_tuples(current_coord, (0,-1))
-                if current_coord in region_map:
-                    region = region_map[current_coord]
-                elif in_input(input, down) and get_from(input, down) == type_of_plant and \
-                    down in region_map:
-                    region = region_map[down]
-                    region_map[current_coord] = region
-                    region.add(current_coord)
-                elif in_input(input, right) and get_from(input, right) == type_of_plant and \
-                    right in region_map:
-                    region = region_map[right]
-                    region_map[current_coord] = region
-                    region.add(current_coord)
-                elif in_input(input, left) and get_from(input, left) == type_of_plant and \
-                    left in region_map:
-                    region = region_map[left]
-                    region_map[current_coord] = region
-                    region.add(current_coord)
-                elif  in_input(input, up) and get_from(input, up) == type_of_plant and \
-                    up in region_map:
-                    region = region_map[up]
-                    region_map[current_coord] = region
-                    region.add(current_coord)
-                else:
-                    region = Region(type_of_plant)
-                    region_map[current_coord] = region
-                    region.add(current_coord)
-                    regions.append(region)
-                if in_input(input, down) and get_from(input, down) == type_of_plant and not down in region_map :
-                    region_map[down] = region
-                    region.add(down)
-                if in_input(input, right) and get_from(input, right) == type_of_plant and not right in region_map:
-                    region_map[right] = region
-                    region.add(right)
-                if in_input(input, up) and get_from(input, up) == type_of_plant and not up in region_map:
-                    region_map[up] = region
-                    region.add(up)
-                if in_input(input, left) and get_from(input, left) == type_of_plant and not left in region_map:
-                    region_map[left] = region
-                    region.add(left)
-
-    if type_of_plant == "F":
-            for r in regions:
-                print("Region", str(r), "len", len(r.coordinates), r.calculate_price(input))
-            print(print_regions(input, regions))
+            if cell == type_of_plant and current_coord not in region_map:
+                
+                region = create_region(input, current_coord)
+                regions.append(region)
+                for c in region.coordinates:
+                    region_map[c] = region         
     all_regions.extend(regions)
     cost_per_plant[type_of_plant] = sum([r.calculate_price(input) for r in regions])
     
-print(cost_per_plant)
-print(sum(cost_per_plant.values())) 
-for r in all_regions:
-    print(r.plant, r.calculate_price(input))
 
-
-    
+print("Solution Part 1", sum(cost_per_plant.values())) 
