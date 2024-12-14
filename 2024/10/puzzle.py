@@ -33,8 +33,7 @@ def find_num_paths(y: int, x:int, input: list[list[int]]) -> int:
         if next_x >= len(input) or next_y >= len(input[next_x]) or next_x < 0 or next_y < 0:
             continue
         if input[next_y][next_x] - input[y][x] == 1:
-            unique_paths += find_num_paths(next_y, next_x, input)       
-        
+            unique_paths += find_num_paths(next_y, next_x, input)            
     return unique_paths
 
 def part2(input):
