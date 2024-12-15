@@ -1,10 +1,10 @@
 from sympy.matrices import Matrix
 from typing import Optional
 
-
-
-
 path = "2024/13/input.txt"
+
+COST_A = 3
+COST_B = 1
 
 class Machine:
     def __init__(self, a: tuple[int,int], b: tuple[int,int], prize:tuple[int,int] ):
@@ -38,10 +38,6 @@ for idx, line in list(enumerate(lines))[::4]:
         read_coords(prize_line))
         )
 
-COST_A = 3
-COST_B = 1
-
-
 def get_max_button_presses(button_movement: tuple[int,int], prize: tuple[int,int]):
     upper_bound_by_x = int(prize[0] / button_movement[0]) +1
     upper_bound_by_y = int(prize[1] / button_movement[1]) +1
@@ -67,13 +63,9 @@ for machine in input:
     if solutions:
         min_solution =  min(solutions, key= calc_cost)
         best_solves.append(calc_cost(min_solution))
-print("Solution 1", sum(best_solves))
+print("Solution Part 1", sum(best_solves))
 
 new_machines = [Machine(m.a, m.b, add_vec(m.prize, (10000000000000, 10000000000000))) for m in input]
-
-A = Matrix([[94, 22], [34, 67]])
-b = Matrix([8400,5400])
-print(A.solve(b))
 
 def solve_machine_part2(machine: Machine) -> Optional[tuple[int,int]]:
     rep = [[machine.a[0], machine.b[0]], [machine.a[1], machine.b[1]]]
