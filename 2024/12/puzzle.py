@@ -8,13 +8,11 @@ types_of_plants = set([c for c in open(path).read().strip() if c != "\n"])
 def add_tuples(lhs: tuple[int,int], rhs: tuple[int,int]) -> tuple[int,int]:
     return (lhs[0] + rhs[0], lhs[1]+ rhs[1])
 
-
-
 class Direction(Enum):
     UP=(-1,0)
     DOWN=(1,0)
     RIGHT=(0,1)
-    LEFT=(-1,0)
+    LEFT=(0,-1)
 
 
 class Region:
@@ -46,19 +44,21 @@ class Region:
             elif dir == Direction.RIGHT or dir == Direction.LEFT:
                 walking_directions = [Direction.DOWN, Direction.UP]
             else:
-                raise Exception("???")
-            for 
-
-            
-            
-
-
+                raise Exception("Unerwarteter Wert" + str(dir))
+            for walking_dir in walking_directions:
+                next_coor = add_tuples(segment_coord, walking_dir.value)
+                while in_input(input, next_coor) and get_from(input, next_coor) == self.plant and \
+                    (next_coor, dir) in fence_segments_not_done_yet:
+                    fence_segments_not_done_yet.remove((next_coor, dir))
+                    next_coor = add_tuples(next_coor, walking_dir.value)
+        return number_faces * len(self.coordinates)
+        
 
     def get_all_fence_segments(self, map:list[list[str]]) -> list[tuple[tuple[int,int], Direction]]:
         result = []
         for coord in self.coordinates:
             for dir in [Direction.DOWN, Direction.LEFT, Direction.RIGHT, Direction.UP]:
-                neighbor =add_tuples(coord, dir.value())
+                neighbor =add_tuples(coord, dir.value)
                 if not in_input(map, neighbor ) or get_from(map, neighbor) != self.plant:
                     result.append((coord, dir))
         return result
@@ -125,6 +125,8 @@ def create_region(input: list[str], coord: tuple[int,int]) -> Region:
         
 
 cost_per_plant = dict()
+cost_per_plant_2 = dict()
+
 all_regions: list[Region] = []
 for type_of_plant in types_of_plants:
     regions: list[Region] = []
@@ -139,6 +141,8 @@ for type_of_plant in types_of_plants:
                     region_map[c] = region         
     all_regions.extend(regions)
     cost_per_plant[type_of_plant] = sum([r.calculate_price(input) for r in regions])
+    cost_per_plant_2[type_of_plant] = sum([r.calculate_price_part2(input) for r in regions])
     
 
 print("Solution Part 1", sum(cost_per_plant.values())) 
+print("Solution Part 2", sum(cost_per_plant_2.values())) 
