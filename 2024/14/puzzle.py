@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from functools import reduce
 import os
 
-test = False
+test = True
 path = "2024/14/input_test.txt" if test else "2024/14/input.txt"
 bounds = (11,7) if test else (101,103)
 
@@ -72,3 +72,12 @@ def count_robots_in_quadrant(robots: list[Robot], input_bound: tuple[int,int], q
     return sum([1 for robot in robots if robot.position[0] <= x_max and robot.position[0] >= x_min and robot.position[1] <= y_max and robot.position[1] >= y_min])
 
 print("Solution 1",  reduce(lambda x,y: x * y, [count_robots_in_quadrant(moved,bounds, quadrant ) for quadrant in range(4)]))
+
+
+for i in range(300):
+    moved = [r.move(i, bounds) for r in puzzle_in]
+    print("-----------------")
+    print(draw_robots(moved, bounds))
+    print("Second", i)
+    input("Press enter to continue")
+    os.system('cls' if os.name == 'nt' else 'clear')
