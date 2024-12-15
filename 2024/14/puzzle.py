@@ -1,6 +1,8 @@
 from dataclasses import dataclass
+from functools import reduce
+import os
 
-test = True
+test = False
 path = "2024/14/input_test.txt" if test else "2024/14/input.txt"
 bounds = (11,7) if test else (101,103)
 
@@ -15,9 +17,6 @@ class Robot:
             (new_position[0] % input_bounds[0], new_position[1] % input_bounds[1]),
             self.velocity
         )
-
-
-
 
 def add_vec(lhs: tuple[int,int], rhs:tuple[int,int]) -> tuple[int,int]:
     return (lhs[0] + rhs[0], lhs[1] + rhs[1])
@@ -38,7 +37,7 @@ def parse_robot(line: str) -> Robot:
     )
 
 
-input = [
+puzzle_in = [
     parse_robot(line.strip()) for line in open(path).readlines()
 ]
 
@@ -54,10 +53,11 @@ def draw_robots(robots: list[Robot], bounds: tuple[int,int]) -> str:
         result += "\n"
     return result
 
-moved = [r.move(100, bounds) for r in input]
-    
-print(draw_robots(input, bounds))
-print(draw_robots(moved, bounds))
+moved = [r.move(100, bounds) for r in puzzle_in]
+
+if test:   
+    print(draw_robots(puzzle_in, bounds))
+    print(draw_robots(moved, bounds))
 
 
 def count_robots_in_quadrant(robots: list[Robot], input_bound: tuple[int,int], quadrant: int) -> int:
@@ -67,11 +67,8 @@ def count_robots_in_quadrant(robots: list[Robot], input_bound: tuple[int,int], q
     x_min = 0 if x_quadrant == 0 else ((int(input_bound[0] / 2) + 1))
 
     y_min = 0 if y_quadrant == 0 else (int(input_bound[1] / 2) + 1) 
-    x_max = int(input_bound[0] / 2) if x_quadrant == 0 else input_bound[0]
-    y_max= int(input_bound[1] / 2) if y_quadrant == 0 else input_bound[1]
-    print(quadrant, bounds, x_min, x_max, y_min, y_max)
-
+    x_max = int(input_bound[0] / 2)-1 if x_quadrant == 0 else input_bound[0]
+    y_max= int(input_bound[1] / 2)-1 if y_quadrant == 0 else input_bound[1]
     return sum([1 for robot in robots if robot.position[0] <= x_max and robot.position[0] >= x_min and robot.position[1] <= y_max and robot.position[1] >= y_min])
 
-for quadrant in range(4):
-    print(quadrant, count_robots_in_quadrant(moved, bounds, quadrant))
+print("Solution 1",  reduce(lambda x,y: x * y, [count_robots_in_quadrant(moved,bounds, quadrant ) for quadrant in range(4)]))
