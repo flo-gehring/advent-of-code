@@ -1,3 +1,9 @@
+from sympy.matrices import Matrix
+from typing import Optional
+
+
+
+
 path = "2024/13/input.txt"
 
 class Machine:
@@ -65,14 +71,25 @@ print("Solution 1", sum(best_solves))
 
 new_machines = [Machine(m.a, m.b, add_vec(m.prize, (10000000000000, 10000000000000))) for m in input]
 
-def solve_machine_part1(machine: Machine) -> tuple[int,int]:
-    max_a_presses = get_max_button_presses(machine.a, machine.prize)
-    max_b_presses = get_max_button_presses(machine.b, machine.prize)
-    possible_solutions = []
-    for a_presses in range(max_a_presses +1):
-        for b_presses in range(max_b_presses +1):
-            coord = add_vec(scalar_mult(machine.a, a_presses), scalar_mult(machine.b, b_presses))
-            if coord == machine.prize:
-                possible_solutions.append((a_presses, b_presses))
-    return possible_solutions
+A = Matrix([[94, 22], [34, 67]])
+b = Matrix([8400,5400])
+print(A.solve(b))
 
+def solve_machine_part2(machine: Machine) -> Optional[tuple[int,int]]:
+    rep = [[machine.a[0], machine.b[0]], [machine.a[1], machine.b[1]]]
+    matrix_presses = Matrix(rep)
+    matrix_prize = Matrix([machine.prize[0], machine.prize[1]])
+    try:
+        solution = matrix_presses.solve(matrix_prize)
+        if solution[0].is_integer and solution[1].is_integer:
+            return (solution[0], solution[1])
+        return None
+    except Exception:
+        return None
+
+solves_part_2 = []
+for m in new_machines:
+    solution = solve_machine_part2(m)
+    if solution:
+        solves_part_2.append(calc_cost(solution))
+print("Solution Part 2", sum(solves_part_2))
