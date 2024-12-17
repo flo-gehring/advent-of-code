@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from functools import reduce
 import os
 
-test = True
+test = False
 path = "2024/14/input_test.txt" if test else "2024/14/input.txt"
 bounds = (11,7) if test else (101,103)
 
@@ -74,10 +74,27 @@ def count_robots_in_quadrant(robots: list[Robot], input_bound: tuple[int,int], q
 print("Solution 1",  reduce(lambda x,y: x * y, [count_robots_in_quadrant(moved,bounds, quadrant ) for quadrant in range(4)]))
 
 
-for i in range(300):
-    moved = [r.move(i, bounds) for r in puzzle_in]
+# Setup for solving Puzzle 2:
+# Compute the seconds that have the least "safety factor" and display the grid
+# Check if the grid displays a Christmas Tree. If yes,  put in the number of seconds as solution and hope it was the 
+# fewest.
+# I startet out with a hundred thousand (100 000) seconds to check and the correct solution was the first entry after sorting 
+# by safety factor.
+# Now i reduced the number of seconds to check to 10 000, so the script does not take so long
+
+scores = []
+for i in range(10000):
+    robots =  [r.move(i, bounds) for r in puzzle_in]
+    score =  reduce(lambda x,y: x * y, [count_robots_in_quadrant(robots,bounds, quadrant ) for quadrant in range(4)])
+    scores.append((i, score))
+
+scores.sort(key=lambda x: x[1])
+for (index, _) in scores:
+    moved = [r.move(index, bounds) for r in puzzle_in]
     print("-----------------")
     print(draw_robots(moved, bounds))
-    print("Second", i)
+    print("Second", index)
     input("Press enter to continue")
     os.system('cls' if os.name == 'nt' else 'clear')
+
+# Solution 2 was 8168
