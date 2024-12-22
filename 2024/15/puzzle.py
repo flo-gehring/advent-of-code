@@ -1,6 +1,6 @@
 from functools import reduce
 
-path = "2024/15/input_test.txt"
+path = "2024/15/input_test_smol.txt"
 
 def load_input(path): 
     lines = open(path).readlines()
@@ -92,11 +92,11 @@ def move_puzzle2(warehouse: list[list[str]], robot: tuple[int,int], move: str) -
         return possible_next
 
 def move_tile_one_step(warehouse: list[list[str]], start_pos: tuple[int,int], step_dir: tuple[int,int]):
-    current_position = start_pos
-    last_tile = get_from(warehouse, current_position)
-    current_position = add_vec(current_position, step_dir)
+    last_tile = get_from(warehouse, start_pos)
     if last_tile == ".":
         return
+    current_position = start_pos
+    current_position = add_vec(current_position, step_dir)
     while True:
         current_tile = get_from(warehouse, current_position)
         set_in_warehouse(current_position, warehouse, last_tile)
@@ -106,7 +106,8 @@ def move_tile_one_step(warehouse: list[list[str]], start_pos: tuple[int,int], st
         last_tile = current_tile
 
 def try_move_crate_puzzle2(warehouse: list[list[str]], crate_pos: tuple[int,int], move: tuple[int,int]) -> bool:
-    if move[0] != 0: # Move Horizontally  / Sideways
+    if move[1] != 0: # Move Horizontally  / Sideways
+        print("Move horizontal")
         current = add_vec(crate_pos, move)
         while get_from(warehouse, current) != ".":
             if get_from(warehouse, current) == "#":
@@ -114,8 +115,8 @@ def try_move_crate_puzzle2(warehouse: list[list[str]], crate_pos: tuple[int,int]
             current = add_vec(current,  move)
         move_tile_one_step(warehouse, crate_pos, move)
         return True
-    
     else: # Move Vertically
+        print("Move vertical")
         movable_crates = get_movable_crates(warehouse, crate_pos, move)
         if movable_crates:
             for crate in movable_crates:
@@ -136,9 +137,9 @@ def get_movable_crates(
     crate_pos_is_left = None
     if crate_symbol_at_create_pos == "]":
         crate_pos_is_left = False
-        crate_pos_2 = add_vec(crate_pos, (-1,0))
+        crate_pos_2 = add_vec(crate_pos, (0,-1))
     else: 
-        crate_pos_2 = add_vec(crate_pos, (1,0))
+        crate_pos_2 = add_vec(crate_pos, (0,1))
         crate_pos_is_left = True
     crate = (crate_pos, crate_pos_2) if crate_pos_is_left else (crate_pos_2, crate_pos)
     crates = [crate]
@@ -202,6 +203,11 @@ def move_robot_puzzle2(warehouse: list[list[str]], movements: list[str]):
     set_in_warehouse(robot, warehouse, ".")
     for m in movements:
         robot = move_puzzle2(warehouse, robot, m)
+        set_in_warehouse(robot, warehouse, "@")
+        print("Movement", m )
+        print(pretty_print(warehouse))
+        set_in_warehouse(robot, warehouse, ".")
+
 
 def puzzle1(warehouse: list[list[str]], movements: list[str]) -> tuple[int,int]:
     move_robot(warehouse, movements)
