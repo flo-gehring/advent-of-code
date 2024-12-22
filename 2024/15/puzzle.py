@@ -1,6 +1,6 @@
 from functools import reduce
 
-path = "2024/15/input_test_smol.txt"
+path = "2024/15/input.txt"
 
 def load_input(path): 
     lines = open(path).readlines()
@@ -55,10 +55,8 @@ def try_move_crate(warehouse: list[list[str]], crate_pos: tuple[int,int], move: 
     current = add_vec(crate_pos, move)
     while get_from(warehouse, current) != ".":
         if get_from(warehouse, current) == "#":
-            print("False", current)
             return False 
         current = add_vec(current,  move)
-    print("Moving Crate", crate_pos , current )
     set_in_warehouse(  crate_pos,warehouse, ".")
     set_in_warehouse( current, warehouse, "O")
     return True
