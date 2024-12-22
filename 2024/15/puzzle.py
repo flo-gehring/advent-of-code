@@ -189,14 +189,14 @@ def calculate_solution_puzzle2(warehouse: list[list[str]]) -> int:
     result = 0
     height = len(warehouse)
     width = len(warehouse[0])
+    print("height", height, "width", width)
     for (y, row) in enumerate(warehouse):
         for (x, char) in enumerate(row):
-            height_dist = min(y, height - y) # todo 
+            height_dist = min(y, (height - (y+1))) # todo 
+            width_dist = min(x, (width  -2 - x))
             if char == "[":
-                if x < width -( x + 2):
-                    result += 100 * height_dist + x
-                else:
-                    result += 100 * height_dist + (width - (x -2)) 
+                print(f"({y}, {x}): {height_dist} * 100 + {width_dist}")
+                result += (height_dist * 100) + width_dist
     return result
 
 def find_robot(warehouse: list[list[str]]) -> tuple[int,int]:
@@ -233,7 +233,6 @@ def copy_input(input: list[list[str]]) -> list[list[str]]:
     for i in input:
         result.append(i.copy())
     return result
-
 
 def expand_warehouse(warehouse: list[list[str]]) -> list[list[str]]:
     result = []
