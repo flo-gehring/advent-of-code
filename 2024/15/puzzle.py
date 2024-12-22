@@ -1,6 +1,6 @@
 from functools import reduce
 
-path = "2024/15/input_test_smol.txt"
+path = "2024/15/input_test.txt"
 
 def load_input(path): 
     lines = open(path).readlines()
@@ -185,6 +185,20 @@ def calculate_solution_puzzle1(warehouse: list[list[str]]) -> int:
                 result += 100 * y + x
     return result
 
+def calculate_solution_puzzle2(warehouse: list[list[str]]) -> int:
+    result = 0
+    height = len(warehouse)
+    width = len(warehouse[0])
+    for (y, row) in enumerate(warehouse):
+        for (x, char) in enumerate(row):
+            height_dist = min(y, height - y) # todo 
+            if char == "[":
+                if x < width -( x + 2):
+                    result += 100 * height_dist + x
+                else:
+                    result += 100 * height_dist + (width - (x -2)) 
+    return result
+
 def find_robot(warehouse: list[list[str]]) -> tuple[int,int]:
     for (y, row) in enumerate(warehouse):
         for (x, cell) in enumerate(row):
@@ -248,6 +262,7 @@ def puzzle2(warehouse: list[list[str]], movements: list[str])-> int:
     print(pretty_print(expanded))
     move_robot_puzzle2(expanded, movements)
     print(pretty_print(expanded))
+    return calculate_solution_puzzle2(expanded)
 
 print("Solution Puzzle 1", puzzle1(copy_input(warehouse), movement))
 print("Solution Puzzle 2", puzzle2(copy_input(warehouse), movement))
