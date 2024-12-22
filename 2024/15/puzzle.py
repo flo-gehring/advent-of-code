@@ -1,6 +1,6 @@
 from functools import reduce
 
-path = "2024/15/input_test.txt"
+path = "2024/15/input.txt"
 
 def load_input(path): 
     lines = open(path).readlines()
@@ -151,7 +151,7 @@ def get_movable_crates(
     crate_symbols = ["[", "]"]
     if next_char_1 == "." and next_char_2 == ".":
         return crates
-    elif next_char_2 == "#" or next_char_2 == "#":
+    elif next_char_1 == "#" or next_char_2 == "#":
         return []
     elif next_char_2 in crate_symbols and next_char_1 in crate_symbols:
         movable_crates_from1 = get_movable_crates(warehouse, next_1, dir)
