@@ -32,8 +32,6 @@ class Direction(Enum):
                 return Direction.WEST
             case Direction.WEST:
                 return Direction.EAST
-    
- 
 
 @dataclass
 class Vertex:
@@ -44,12 +42,12 @@ class Vertex:
     def __str__(self):
         return f"{self.y}_{self.x}_{self.dir}"
 
-
 def add_vec(lhs: tuple[int,int], rhs:tuple[int,int]) -> tuple[int,int]:
     return (lhs[0] + rhs[0], lhs[1] + rhs[1])
 
 def scalar_mult(v: tuple[int,int], s:int) -> tuple[int,int]:
     return (int(v[0] * s), (v[1] * s))
+
 def is_in_input(input: list[list[str]], p: tuple[int,int]) -> bool:
     len_y = len(input)
     return len_y > p[0]  and p[0] >= 0 and len(input[0]) > p[1] and len(input[0]) >= 0
@@ -60,7 +58,7 @@ def get_from(input: list[list[str]], p: tuple[int,int]) -> str:
 
 
 def create_inner_maze_from_path(p):
-    lines = open(path).readlines()
+    lines = open(p).readlines()
     inner_maze = [l.strip()[1:len(l.strip()) -1] for l in lines[1:len(lines)-1]]
     return [[char for char in line ] for line in inner_maze]
 
@@ -74,7 +72,6 @@ def create_graph_from_input(inner_maze) -> ig.Graph:
     """
     vertices = []
     edges = []
-    
     for (y, row) in enumerate(inner_maze):
         for (x , tile) in enumerate(row):
             if tile == "#":
@@ -104,19 +101,11 @@ def create_graph_from_input(inner_maze) -> ig.Graph:
     return ig.Graph.DictList(vertices, edges)
 
 
-
-
-
 def find(input: list[list[str]], to_search: str) -> tuple[int,int]:
     for (y, row) in enumerate(input):
         for (x, cell) in enumerate(row):
             if cell == to_search:
                 return (y,x)
-
-
-
-    
-
 
 m = create_inner_maze_from_path(path)
 g = create_graph_from_input(m)
