@@ -29,8 +29,6 @@ def pretty_print(input: list[list[str]]) -> str:
             result += c
         result += "\n"
     return result
-warehouse, movement  = load_input(path)
-robot = find_robot(warehouse)
 
 def add_vec(lhs: tuple[int,int], rhs:tuple[int,int]) -> tuple[int,int]:
     return (lhs[0] + rhs[0], lhs[1] + rhs[1])
@@ -81,17 +79,30 @@ def move(warehouse: list[list[str]], robot: tuple[int,int], move: str) -> tuple[
         return possible_next
 
 
-print(pretty_print(warehouse))
-set_in_warehouse(robot, warehouse, ".")
-print(robot)
-print(pretty_print(warehouse))
+def calculate_solution_puzzle1(warehouse: list[list[str]]) -> int:
+    result = 0
+    for (y, row) in enumerate(warehouse):
+        for (x, char) in enumerate(row):
+            if char == "O":
+                result += 100 * y + x
+    return result
 
-for m in movement:
-    robot = move(warehouse, robot, m)
-    print("move", m)
-    set_in_warehouse(robot, warehouse, "@")
-    print(pretty_print(warehouse))
+def find_robot(warehouse: list[list[str]]) -> tuple[int,int]:
+    for (y, row) in enumerate(warehouse):
+        for (x, cell) in enumerate(row):
+            if cell == "@":
+                return (y,x)
+
+def move_robot(warehouse: list[list[str]], movements: list[str]) -> None:
+    robot = find_robot(warehouse)
     set_in_warehouse(robot, warehouse, ".")
+    for m in movement:
+        robot = move(warehouse, robot, m)
 
+def puzzle1(warehouse: list[list[str]], movements: list[str]) -> tuple[int,int]:
+    move_robot(warehouse, movements)
+    return calculate_solution_puzzle1(warehouse)
 
-print(pretty_print(warehouse))
+warehouse, movement  = load_input(path)
+
+print("Solution Puzzle 1", puzzle1(warehouse, movement))
