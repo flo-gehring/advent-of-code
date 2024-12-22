@@ -92,11 +92,12 @@ def move_puzzle2(warehouse: list[list[str]], robot: tuple[int,int], move: str) -
         return possible_next
 
 def move_tile_one_step(warehouse: list[list[str]], start_pos: tuple[int,int], step_dir: tuple[int,int]):
-    last_tile = get_from(warehouse, start_pos)
+    last_tile = get_from(warehouse, start_pos)  
     if last_tile == ".":
         return
     current_position = start_pos
     current_position = add_vec(current_position, step_dir)
+    set_in_warehouse(start_pos, warehouse, ".")
     while True:
         current_tile = get_from(warehouse, current_position)
         set_in_warehouse(current_position, warehouse, last_tile)
@@ -152,7 +153,7 @@ def get_movable_crates(
         return crates
     elif next_char_2 == "#" or next_char_2 == "#":
         return []
-    elif next_char_2 in crate_symbols  and next_char_1 in crate_symbols:
+    elif next_char_2 in crate_symbols and next_char_1 in crate_symbols:
         movable_crates_from1 = get_movable_crates(warehouse, next_1, dir)
         movable_crates_from2 = get_movable_crates(warehouse, next_2, dir)
         if not movable_crates_from1 or movable_crates_from2:
