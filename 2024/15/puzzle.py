@@ -119,6 +119,8 @@ def try_move_crate_puzzle2(warehouse: list[list[str]], crate_pos: tuple[int,int]
     else: # Move Vertically
         print("Move vertical")
         movable_crates = get_movable_crates(warehouse, crate_pos, move)
+        move_down = move[0] == 1
+        movable_crates = sorted(movable_crates, key=lambda x: x[0][0], reverse=move_down)
         if movable_crates:
             for crate in movable_crates:
                 move_tile_one_step(warehouse, crate[0], move)
@@ -156,7 +158,7 @@ def get_movable_crates(
     elif next_char_2 in crate_symbols and next_char_1 in crate_symbols:
         movable_crates_from1 = get_movable_crates(warehouse, next_1, dir)
         movable_crates_from2 = get_movable_crates(warehouse, next_2, dir)
-        if not movable_crates_from1 or movable_crates_from2:
+        if not movable_crates_from1 or not movable_crates_from2:
             return []
         crates.extend(movable_crates_from2)
         crates.extend(movable_crates_from1)
@@ -174,10 +176,6 @@ def get_movable_crates(
         crates.extend(movable_crates_from2)
         return crates
     raise Exception(f"Unreachable state {next_char_1}, {next_char_2}")
-
-                                                                          
-
-   
 
 def calculate_solution_puzzle1(warehouse: list[list[str]]) -> int:
     result = 0
