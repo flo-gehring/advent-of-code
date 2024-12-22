@@ -108,7 +108,6 @@ def move_tile_one_step(warehouse: list[list[str]], start_pos: tuple[int,int], st
 
 def try_move_crate_puzzle2(warehouse: list[list[str]], crate_pos: tuple[int,int], move: tuple[int,int]) -> bool:
     if move[1] != 0: # Move Horizontally  / Sideways
-        print("Move horizontal")
         current = add_vec(crate_pos, move)
         while get_from(warehouse, current) != ".":
             if get_from(warehouse, current) == "#":
@@ -117,7 +116,6 @@ def try_move_crate_puzzle2(warehouse: list[list[str]], crate_pos: tuple[int,int]
         move_tile_one_step(warehouse, crate_pos, move)
         return True
     else: # Move Vertically
-        print("Move vertical")
         movable_crates = get_movable_crates(warehouse, crate_pos, move)
         move_down = move[0] == 1
         movable_crates = sorted(movable_crates, key=lambda x: x[0][0], reverse=move_down)
@@ -187,16 +185,10 @@ def calculate_solution_puzzle1(warehouse: list[list[str]]) -> int:
 
 def calculate_solution_puzzle2(warehouse: list[list[str]]) -> int:
     result = 0
-    height = len(warehouse)
-    width = len(warehouse[0])
-    print("height", height, "width", width)
     for (y, row) in enumerate(warehouse):
         for (x, char) in enumerate(row):
-            height_dist = min(y, (height - (y+1))) # todo 
-            width_dist = min(x, (width  -2 - x))
             if char == "[":
-                print(f"({y}, {x}): {height_dist} * 100 + {width_dist}")
-                result += (height_dist * 100) + width_dist
+                result += (y * 100) + x
     return result
 
 def find_robot(warehouse: list[list[str]]) -> tuple[int,int]:
@@ -217,8 +209,8 @@ def move_robot_puzzle2(warehouse: list[list[str]], movements: list[str]):
     for m in movements:
         robot = move_puzzle2(warehouse, robot, m)
         set_in_warehouse(robot, warehouse, "@")
-        print("Movement", m )
-        print(pretty_print(warehouse))
+        #print("Movement", m )
+        #print(pretty_print(warehouse))
         set_in_warehouse(robot, warehouse, ".")
 
 
@@ -258,9 +250,9 @@ def expand_warehouse(warehouse: list[list[str]]) -> list[list[str]]:
 
 def puzzle2(warehouse: list[list[str]], movements: list[str])-> int:
     expanded = expand_warehouse(warehouse)
-    print(pretty_print(expanded))
+    #print(pretty_print(expanded))
     move_robot_puzzle2(expanded, movements)
-    print(pretty_print(expanded))
+    #print(pretty_print(expanded))
     return calculate_solution_puzzle2(expanded)
 
 print("Solution Puzzle 1", puzzle1(copy_input(warehouse), movement))
