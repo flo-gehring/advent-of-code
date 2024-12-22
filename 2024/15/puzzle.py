@@ -1,6 +1,6 @@
 from functools import reduce
 
-path = "2024/15/input.txt"
+path = "2024/15/input_test.txt"
 
 def load_input(path): 
     lines = open(path).readlines()
@@ -75,7 +75,107 @@ def move(warehouse: list[list[str]], robot: tuple[int,int], move: str) -> tuple[
         return robot
     else:
         return possible_next
+    
+def move_puzzle2(warehouse: list[list[str]], robot: tuple[int,int], move: str) -> tuple[int,int]:
+    movement_vec = translate_move(move)
+    possible_next = add_vec(robot, movement_vec)
+    char_at_next = get_from(warehouse, possible_next) 
+    if char_at_next == "[" or char_at_next == "]":
+        moved = try_move_crate_puzzle2(warehouse, possible_next, movement_vec)
+        if moved:
+            return possible_next
+        else:
+            return robot
+    elif char_at_next == "#":
+        return robot
+    else:
+        return possible_next
 
+def move_tile_one_step(warehouse: list[list[str]], start_pos: tuple[int,int], step_dir: tuple[int,int]):
+    current_position = start_pos
+    last_tile = get_from(warehouse, current_position)
+    current_position = add_vec(current_position, step_dir)
+    if last_tile == ".":
+        return
+    while True:
+        current_tile = get_from(warehouse, current_position)
+        set_in_warehouse(current_position, warehouse, last_tile)
+        if current_tile == ".":
+            break
+        current_position = add_vec(current_position, step_dir)
+        last_tile = current_tile
+
+def try_move_crate_puzzle2(warehouse: list[list[str]], crate_pos: tuple[int,int], move: tuple[int,int]) -> bool:
+    if move[0] != 0: # Move Horizontally  / Sideways
+        current = add_vec(crate_pos, move)
+        while get_from(warehouse, current) != ".":
+            if get_from(warehouse, current) == "#":
+                return False 
+            current = add_vec(current,  move)
+        move_tile_one_step(warehouse, crate_pos, move)
+        return True
+    
+    else: # Move Vertically
+        movable_crates = get_movable_crates(warehouse, crate_pos, move)
+        if movable_crates:
+            for crate in movable_crates:
+                move_tile_one_step(warehouse, crate[0], move)
+                move_tile_one_step(warehouse, crate[1], move)
+            return True
+        else:
+            return False
+            
+
+def get_movable_crates(
+        warehouse,
+          crate_pos: tuple[int,int],
+            dir: tuple[int,int]
+            ) -> list[tuple[tuple[int,int], tuple[int,int]]]:
+    crate_symbol_at_create_pos = get_from(warehouse, crate_pos)
+    crate_pos_2 = None
+    crate_pos_is_left = None
+    if crate_symbol_at_create_pos == "]":
+        crate_pos_is_left = False
+        crate_pos_2 = add_vec(crate_pos, (-1,0))
+    else: 
+        crate_pos_2 = add_vec(crate_pos, (1,0))
+        crate_pos_is_left = True
+    crate = (crate_pos, crate_pos_2) if crate_pos_is_left else (crate_pos_2, crate_pos)
+    crates = [crate]
+    next_1 = add_vec(crate_pos, dir)
+    next_2 = add_vec(crate_pos_2, dir)
+    next_char_1 =get_from(warehouse, next_1)
+    next_char_2 =  get_from(warehouse, next_2) 
+    crate_symbols = ["[", "]"]
+    if next_char_1 == "." and next_char_2 == ".":
+        return crates
+    elif next_char_2 == "#" or next_char_2 == "#":
+        return []
+    elif next_char_2 in crate_symbols  and next_char_1 in crate_symbols:
+        movable_crates_from1 = get_movable_crates(warehouse, next_1, dir)
+        movable_crates_from2 = get_movable_crates(warehouse, next_2, dir)
+        if not movable_crates_from1 or movable_crates_from2:
+            return []
+        crates.extend(movable_crates_from2)
+        crates.extend(movable_crates_from1)
+        return crates
+    elif next_char_1 in crate_symbols:
+        movable_crates_from1 = get_movable_crates(warehouse, next_1, dir)
+        if not movable_crates_from1:
+            return []
+        crates.extend(movable_crates_from1)
+        return crates
+    elif next_char_2 in crate_symbols:
+        movable_crates_from2 = get_movable_crates(warehouse, next_2, dir)
+        if not movable_crates_from2:
+            return []
+        crates.extend(movable_crates_from2)
+        return crates
+    raise Exception(f"Unreachable state {next_char_1}, {next_char_2}")
+
+                                                                          
+
+   
 
 def calculate_solution_puzzle1(warehouse: list[list[str]]) -> int:
     result = 0
@@ -94,8 +194,14 @@ def find_robot(warehouse: list[list[str]]) -> tuple[int,int]:
 def move_robot(warehouse: list[list[str]], movements: list[str]) -> None:
     robot = find_robot(warehouse)
     set_in_warehouse(robot, warehouse, ".")
-    for m in movement:
+    for m in movements:
         robot = move(warehouse, robot, m)
+
+def move_robot_puzzle2(warehouse: list[list[str]], movements: list[str]):
+    robot = find_robot(warehouse)
+    set_in_warehouse(robot, warehouse, ".")
+    for m in movements:
+        robot = move_puzzle2(warehouse, robot, m)
 
 def puzzle1(warehouse: list[list[str]], movements: list[str]) -> tuple[int,int]:
     move_robot(warehouse, movements)
@@ -103,4 +209,40 @@ def puzzle1(warehouse: list[list[str]], movements: list[str]) -> tuple[int,int]:
 
 warehouse, movement  = load_input(path)
 
-print("Solution Puzzle 1", puzzle1(warehouse, movement))
+def copy_input(input: list[list[str]]) -> list[list[str]]:
+    result = []
+    for i in input:
+        result.append(i.copy())
+    return result
+
+
+def expand_warehouse(warehouse: list[list[str]]) -> list[list[str]]:
+    result = []
+    for row in warehouse:
+        new_row = []
+        for string in row:
+            if string == "#":
+                new_row.append("#")
+                new_row.append("#")
+            elif string == "O":
+                new_row.append("[")
+                new_row.append("]")
+            elif string == ".":
+                new_row.append(".")
+                new_row.append(".")
+            elif string == "@":
+                new_row.append("@")
+                new_row.append(".")
+            else:
+                raise Exception(f"Unknown Tile {string}" )
+        result.append(new_row)
+    return result
+
+def puzzle2(warehouse: list[list[str]], movements: list[str])-> int:
+    expanded = expand_warehouse(warehouse)
+    print(pretty_print(expanded))
+    move_robot_puzzle2(expanded, movements)
+    print(pretty_print(expanded))
+
+print("Solution Puzzle 1", puzzle1(copy_input(warehouse), movement))
+print("Solution Puzzle 2", puzzle2(copy_input(warehouse), movement))
