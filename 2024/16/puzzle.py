@@ -209,7 +209,6 @@ if demonstrate_ig_error:
             weight="weight")
     list_solution = list(solution2)
     visited_nodes = set()
-    
     # Get all visited Vertices and collapse the ones belonging to the same tile
     for path in list_solution:
         visited_nodes = visited_nodes.union(set(path))
