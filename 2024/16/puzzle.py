@@ -1,15 +1,14 @@
 from dataclasses import dataclass
-from enum import Enum
+from enum import Flag, auto
 import igraph as ig
-
 
 path = "2024/16/input_test.txt"
 
-class Direction(Enum):
-    NORTH = "NORTH"
-    EAST = "EAST"
-    SOUTH ="SOUTH"
-    WEST = "WEST"
+class Direction(Flag):
+    NORTH = auto()
+    EAST = auto()
+    SOUTH =auto()
+    WEST = auto()
 
     def get_offset(self):
         match self:
@@ -32,6 +31,8 @@ class Direction(Enum):
                 return Direction.WEST
             case Direction.WEST:
                 return Direction.EAST
+
+ALL_DIRECTIONS = Direction.NORTH |Direction.EAST |Direction.WEST |Direction.SOUTH
 
 @dataclass
 class Vertex:
@@ -71,6 +72,7 @@ def create_edge_directed(source: Vertex, target: Vertex, weight: int) -> dict:
                       "weight": weight,
                       }
 
+
 def create_graph_from_input(inner_maze) -> ig.Graph:
     """
     From Documentation  
@@ -85,21 +87,14 @@ def create_graph_from_input(inner_maze) -> ig.Graph:
         for (x , tile) in enumerate(row):
             if tile == "#":
                 continue
-            edges.extend([
-                create_edge_directed(Vertex(y,x, Direction.NORTH, "in"), Vertex(y,x, Direction.SOUTH, "out"), 0),
-                create_edge_directed(Vertex(y,x, Direction.NORTH, "in"), Vertex(y,x, Direction.EAST, "out"), 1000),
-                create_edge_directed(Vertex(y,x, Direction.NORTH, "in"), Vertex(y,x, Direction.WEST, "out"), 1000),
-                create_edge_directed(Vertex(y,x, Direction.SOUTH, "in"), Vertex(y,x, Direction.NORTH, "out"), 0),
-                create_edge_directed(Vertex(y,x, Direction.SOUTH, "in"), Vertex(y,x, Direction.EAST, "out"), 1000),
-                create_edge_directed(Vertex(y,x, Direction.SOUTH, "in"), Vertex(y,x, Direction.WEST, "out"), 1000),
-                create_edge_directed(Vertex(y,x, Direction.EAST, "in"), Vertex(y,x, Direction.WEST, "out"), 0),
-                create_edge_directed(Vertex(y,x, Direction.EAST, "in"), Vertex(y,x, Direction.SOUTH, "out"), 1000),
-                create_edge_directed(Vertex(y,x, Direction.EAST, "in"), Vertex(y,x, Direction.NORTH, "out"), 1000),
-                create_edge_directed(Vertex(y,x, Direction.WEST, "in"), Vertex(y,x, Direction.EAST, "out"), 0),
-                create_edge_directed(Vertex(y,x, Direction.WEST, "in"), Vertex(y,x, Direction.SOUTH, "out"), 1000),
-                create_edge_directed(Vertex(y,x, Direction.WEST, "in"), Vertex(y,x, Direction.NORTH, "out"), 1000),
-              ])
-            for direction in list(Direction):
+            for direction in ALL_DIRECTIONS:
+                print(direction)
+                edges.extend([create_edge_directed(
+                                        Vertex(y,x, direction, "in"),
+                                        Vertex(y,x, other_dir, "out"), 
+                                        0 if direction.get_opposite() == other_dir else 1000
+                                    ) for other_dir in ~direction
+                ])
                 vertex_out = Vertex(y,x, direction, "out")
                 vertex_in = Vertex(y,x, direction, "in")
                 vertices.append({"name": str(vertex_in), "vertex": vertex_in})
@@ -112,10 +107,8 @@ def create_graph_from_input(inner_maze) -> ig.Graph:
     end = find(inner_maze, "E")
     inner_end_vertex = Vertex(end[0], end[1], None, "INNER")
     edges.extend([
-        create_edge_directed(Vertex(end[0], end[1], Direction.EAST, "in"), inner_end_vertex, 0),
-        create_edge_directed(Vertex(end[0], end[1], Direction.NORTH, "in"), inner_end_vertex, 0),
-        create_edge_directed(Vertex(end[0], end[1], Direction.SOUTH, "in"), inner_end_vertex, 0),
-        create_edge_directed(Vertex(end[0], end[1], Direction.WEST, "in"), inner_end_vertex, 0)
+        create_edge_directed(Vertex(end[0], end[1],direction, "in"), inner_end_vertex, 0)
+        for direction in list(Direction)
         ]
         ) 
     vertices.append({"name": str(inner_end_vertex), "vertex": inner_end_vertex})
@@ -131,6 +124,7 @@ def find(input: list[list[str]], to_search: str) -> tuple[int,int]:
 m = create_inner_maze_from_path(path)
 (graph, end_vertex) = create_graph_from_input(m)
 start = find(m, "S")
+print(str(graph))
 start_vertex = str(Vertex(start[0], start[1], Direction.EAST, "in"))
 
 want_solution_1 = True
