@@ -92,7 +92,8 @@ def create_graph_from_input(inner_maze) -> tuple[ig.Graph, ig.Vertex]:
                                         Vertex(y,x, direction, "in"),
                                         Vertex(y,x, other_dir, "out"), 
                                         0 if direction.get_opposite() == other_dir else 1000
-                                    ) for other_dir in ~direction
+                                    ) 
+                                    for other_dir in ~direction
                 ])
                 vertex_out = Vertex(y,x, direction, "out")
                 vertex_in = Vertex(y,x, direction, "in")
@@ -108,11 +109,9 @@ def create_graph_from_input(inner_maze) -> tuple[ig.Graph, ig.Vertex]:
     edges.extend([
         create_edge_directed(Vertex(end[0], end[1],direction, "in"), inner_end_vertex, 0)
         for direction in list(Direction)
-        ]
-        ) 
+        ]) 
     vertices.append({"name": str(inner_end_vertex), "vertex": inner_end_vertex})
     return (ig.Graph.DictList(vertices, edges, directed=True), inner_end_vertex)
-
 
 def find(input: list[list[str]], to_search: str) -> tuple[int,int]:
     for (y, row) in enumerate(input):
@@ -124,7 +123,6 @@ m = create_inner_maze_from_path(path)
 (graph, end_vertex) = create_graph_from_input(m)
 start = find(m, "S")
 start_vertex = str(Vertex(start[0], start[1], Direction.WEST, "in"))
-
 
 def get_node_with_name(graph: nx.Graph, name: str) -> int:
     for (node, nodedata) in graph.nodes.items():
@@ -155,8 +153,6 @@ if want_solution_2:
     print("Starting Solution 2")
     networkx_graph = graph.to_networkx()
     solution2_igraph = graph.get_all_shortest_paths(start_vertex, str(end_vertex), weights="weight")
-    #solution2 = graph.get_all_(start_vertex, str(end_vertex))
-    networkx_graph.edges
     solution2 = nx.all_shortest_paths(
         networkx_graph,
           get_node_with_name(networkx_graph, str(start_vertex)), 
@@ -177,6 +173,6 @@ if want_solution_2:
         visited_nodes_ig = visited_nodes_ig.union(set(path))
     vertex_objects_ig = graph.vs.select(lambda x: x.index in visited_nodes_ig)["vertex"]
     visted_ig = set([(s.y, s.x) for s in vertex_objects_ig])
-    print("Solution 2", len(list(visted)))
-    print("Solution 2", len(list(visted_ig)))
+    print("Solution 2 (NetworkX)", len(list(visted)))
+    print("Solution 2 (igraph)", len(list(visted_ig)))
     print(f"There's a bug in igraph as {len(list(visted))} != { len(list(visted_ig))} and the first one is correct ")
