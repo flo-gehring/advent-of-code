@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from enum import Flag, auto
 import igraph as ig
-
-path = "2024/16/input_test.txt"
+import networkx as nx
+path = "2024/16/input.txt"
 
 class Direction(Flag):
     NORTH = auto()
@@ -42,7 +42,7 @@ class Vertex:
     flow: str
 
     def __str__(self):
-        return f"{self.y}_{self.x}_{self.dir}_{self.flow}"
+        return f"{self.y}_{self.x}_{self.dir.name if self.dir != None else "None"}_{self.flow}"
 
 def add_vec(lhs: tuple[int,int], rhs:tuple[int,int]) -> tuple[int,int]:
     return (lhs[0] + rhs[0], lhs[1] + rhs[1])
@@ -73,7 +73,7 @@ def create_edge_directed(source: Vertex, target: Vertex, weight: int) -> dict:
                       }
 
 
-def create_graph_from_input(inner_maze) -> ig.Graph:
+def create_graph_from_input(inner_maze) -> tuple[ig.Graph, ig.Vertex]:
     """
     From Documentation  
      vertices = [{'name': 'apple'}, {'name': 'pear'}, {'name': 'peach'}]
@@ -88,7 +88,6 @@ def create_graph_from_input(inner_maze) -> ig.Graph:
             if tile == "#":
                 continue
             for direction in ALL_DIRECTIONS:
-                print(direction)
                 edges.extend([create_edge_directed(
                                         Vertex(y,x, direction, "in"),
                                         Vertex(y,x, other_dir, "out"), 
@@ -124,8 +123,14 @@ def find(input: list[list[str]], to_search: str) -> tuple[int,int]:
 m = create_inner_maze_from_path(path)
 (graph, end_vertex) = create_graph_from_input(m)
 start = find(m, "S")
-print(str(graph))
-start_vertex = str(Vertex(start[0], start[1], Direction.EAST, "in"))
+start_vertex = str(Vertex(start[0], start[1], Direction.WEST, "in"))
+
+
+def get_node_with_name(graph: nx.Graph, name: str) -> int:
+    for (node, nodedata) in graph.nodes.items():
+        if nodedata["name"] == name:
+            return node
+    raise Exception("Not Found")
 
 want_solution_1 = True
 if want_solution_1:
@@ -148,10 +153,21 @@ def print_map(input: list[list[str]], visited: list[tuple[int,int]]):
 want_solution_2 = True
 if want_solution_2:
     print("Starting Solution 2")
-    solution2 = graph.get_all_shortest_paths(start_vertex, str(end_vertex), weights="weight")
-    print(solution2)
+    networkx_graph = graph.to_networkx()
+    #solution2 = graph.get_all_shortest_paths(start_vertex, str(end_vertex), weights="weight")
+    #solution2 = graph.get_all_(start_vertex, str(end_vertex))
+    print(networkx_graph)
+    networkx_graph.edges
+    solution2 = nx.all_shortest_paths(
+        networkx_graph,
+          get_node_with_name(networkx_graph, str(start_vertex)), 
+          get_node_with_name(networkx_graph, str(end_vertex)),
+            weight="weight")
+    list_solution = list(solution2)
+    print(list_solution)
+    print(len(list_solution))
     visited_nodes = set()
-    for path in solution2:
+    for path in list_solution:
         visited_nodes = visited_nodes.union(set(path))
     vertex_objects = graph.vs.select(lambda x: x.index in visited_nodes)["vertex"]
     visted = set([(s.y, s.x) for s in vertex_objects])
@@ -159,5 +175,4 @@ if want_solution_2:
     print(print_map(m, set()))
     print("----------")
     print(print_map(m, visted))
-    print(len(solution2))
-    print("Solution 2", len(visted))
+    print("Solution 2", len(list(visted)))
