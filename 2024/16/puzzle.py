@@ -3,7 +3,7 @@ from enum import Enum
 import igraph as ig
 
 
-path = "2024/16/input.txt"
+path = "2024/16/input_test.txt"
 
 class Direction(Enum):
     NORTH = "NORTH"
@@ -113,5 +113,14 @@ start = find(m, "S")
 start_vertex = str(Vertex(start[0], start[1], Direction.EAST))
 end = find(m, "E")
 end_vertices=[str(Vertex(end[0], end[1], d)) for d in list(Direction)]
-dist_solution1 = g.distances(start_vertex, end_vertices, weights="weight")
-print("Solution 1", min(*dist_solution1))
+
+want_solution_1 = True
+if want_solution_1:
+    dist_solution1 = g.distances(start_vertex, end_vertices, weights="weight")
+    print("Solution 1", min(*dist_solution1))
+
+want_solution_2 = True
+if want_solution_2:
+    print("Starting Solution 2")
+    solution2 = g.get_all_shortest_paths(start_vertex, end_vertices, weights="weight")
+    print(solution2)
