@@ -1,3 +1,15 @@
+"""Explanation to the Solution
+
+For each tile in the maze (except walls) there are 8 verices in the Graph.
+ -> North IN / North OUT, East IN / East OUT etc
+ This allows the construction of edges, that model the cost and possibilities of turning more effectively than if there would only be 
+ four vertices (North, South, East, Wert) and we can turn the Graph into a directed one.
+ This allows the algorithms to run much faster than on an undirected Graph with fewer Nodes / Edges but the possibility to do "round trips"
+ in a single tile on the map. 
+
+Also, there seems to be a bug in the Implementation of find_all_shortest_paths of the igraph library.
+"""
+
 from dataclasses import dataclass
 from enum import Flag, auto
 import igraph as ig
@@ -175,4 +187,45 @@ if want_solution_2:
     visted_ig = set([(s.y, s.x) for s in vertex_objects_ig])
     print("Solution 2 (NetworkX)", len(list(visted)))
     print("Solution 2 (igraph)", len(list(visted_ig)))
+    print(f"There's a bug in igraph as {len(list(visted))} != { len(list(visted_ig))} and the first one is correct ")
+
+
+demonstrate_ig_error = True
+maze_small = create_inner_maze_from_path("2024/16/input_test_smol.txt")
+(graph_small, end_vertex_small) = create_graph_from_input(maze_small)
+start_small = find(maze_small, "S")
+start_vertex_small = str(Vertex(start_small[0], start_small[1], Direction.SOUTH, "in"))
+
+if demonstrate_ig_error:
+    print("Demonstrating igraph bug")
+    print("Initial Maze")
+    print(print_map(maze_small, set()))
+    networkx_graph = graph_small.to_networkx()
+    solution2_igraph = graph_small.get_all_shortest_paths(start_vertex_small, str(end_vertex_small), weights="weight")
+    solution2 = nx.all_shortest_paths(
+        networkx_graph,
+          get_node_with_name(networkx_graph, str(start_vertex_small)), 
+          get_node_with_name(networkx_graph, str(end_vertex_small)),
+            weight="weight")
+    list_solution = list(solution2)
+    visited_nodes = set()
+    
+    # Get all visited Vertices and collapse the ones belonging to the same tile
+    for path in list_solution:
+        visited_nodes = visited_nodes.union(set(path))
+    vertex_objects = graph_small.vs.select(lambda x: x.index in visited_nodes)["vertex"]
+    visted = set([(s.y, s.x) for s in vertex_objects])
+    print("Network x Solution")
+    print(print_map(maze_small, visted))
+    # Get all visited Vertices and collapse the ones belonging to the same tile
+    visited_nodes_ig = set()
+    for path in solution2_igraph:
+        visited_nodes_ig = visited_nodes_ig.union(set(path))
+    vertex_objects_ig = graph_small.vs.select(lambda x: x.index in visited_nodes_ig)["vertex"]
+    visted_ig = set([(s.y, s.x) for s in vertex_objects_ig])
+  
+    print("igraph Solution (Wrong)")
+    print(print_map(maze_small, visted_ig))
+    print("Solution  (NetworkX)", len(list(visted)))
+    print("Solution (igraph)", len(list(visted_ig)))
     print(f"There's a bug in igraph as {len(list(visted))} != { len(list(visted_ig))} and the first one is correct ")
