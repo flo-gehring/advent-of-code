@@ -154,9 +154,8 @@ want_solution_2 = True
 if want_solution_2:
     print("Starting Solution 2")
     networkx_graph = graph.to_networkx()
-    #solution2 = graph.get_all_shortest_paths(start_vertex, str(end_vertex), weights="weight")
+    solution2_igraph = graph.get_all_shortest_paths(start_vertex, str(end_vertex), weights="weight")
     #solution2 = graph.get_all_(start_vertex, str(end_vertex))
-    print(networkx_graph)
     networkx_graph.edges
     solution2 = nx.all_shortest_paths(
         networkx_graph,
@@ -164,15 +163,20 @@ if want_solution_2:
           get_node_with_name(networkx_graph, str(end_vertex)),
             weight="weight")
     list_solution = list(solution2)
-    print(list_solution)
-    print(len(list_solution))
     visited_nodes = set()
+    
+    # Get all visited Vertices and collapse the ones belonging to the same tile
     for path in list_solution:
         visited_nodes = visited_nodes.union(set(path))
     vertex_objects = graph.vs.select(lambda x: x.index in visited_nodes)["vertex"]
     visted = set([(s.y, s.x) for s in vertex_objects])
-    print(start, end_vertex)
-    print(print_map(m, set()))
-    print("----------")
-    print(print_map(m, visted))
+    
+    # Get all visited Vertices and collapse the ones belonging to the same tile
+    visited_nodes_ig = set()
+    for path in solution2_igraph:
+        visited_nodes_ig = visited_nodes_ig.union(set(path))
+    vertex_objects_ig = graph.vs.select(lambda x: x.index in visited_nodes_ig)["vertex"]
+    visted_ig = set([(s.y, s.x) for s in vertex_objects_ig])
     print("Solution 2", len(list(visted)))
+    print("Solution 2", len(list(visted_ig)))
+    print(f"There's a bug in igraph as {len(list(visted))} != { len(list(visted_ig))} and the first one is correct ")
