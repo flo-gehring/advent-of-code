@@ -1,4 +1,5 @@
-path = "2024/17/input.txt"
+from dataclasses import dataclass
+path = "2024/17/input_test.txt"
 
 
 def read_register(line: str) -> int:
@@ -12,15 +13,20 @@ def read_input(path: str) -> tuple[tuple[int,int,int],  list[int]]:
 
 initial_registers, programm = read_input(path)
 
-def run_programm(registers: tuple[int,int,int], programm: list[int]) -> list[int]:
-    programm_counter = 0
-    programm_length = len(programm)
-    (reg_a, reg_b, reg_c) = registers
-    output = []
-    while programm_counter < programm_length:
+@dataclass
+class State:
+    programmCounter: int
+    registers: tuple[int,int]
+    output: list[int]
+
+
+def step(programm: list[int], state:State) -> State:
+        programm_counter = state.programmCounter
         opcode = programm[programm_counter]
         operand = programm[programm_counter + 1] if programm_counter + 1 < len(programm) else None
-        current_registers = (reg_a, reg_b, reg_c)
+        current_registers = state.registers
+        (reg_a, reg_b, reg_c) = state.registers
+        output = state.output
         match opcode:
             case 0: # A-Division
                 reg_a = perform_division(operand, current_registers)
@@ -41,7 +47,47 @@ def run_programm(registers: tuple[int,int,int], programm: list[int]) -> list[int
             case 7:
                 reg_c = perform_division(operand, current_registers)
         programm_counter += 2
-    return output         
+        return State(programm_counter, (reg_a, reg_b, reg_c), output)
+
+def run_programm(registers: tuple[int,int,int], programm: list[int]) -> list[int]:
+    programm_length = len(programm)
+    state = State(
+        0,
+        registers,
+        []
+    )
+    while state.programmCounter < programm_length:
+        state = step(programm, state)
+    return state.output     
+
+
+def can_equal(programm: list[int], output: list[int]):
+    if len(output)  > len(programm):
+        return False
+    return programm[:len(output)] == output
+    
+def  test_programm(registers, programm ) -> bool:
+    programm_length = len(programm)
+    state = State(
+        0,
+        registers,
+        []
+    )
+    while True:
+        state = step(programm, state)
+        has_halted = state.programmCounter >= programm_length
+        if has_halted  :
+            return state.output == programm
+        elif not can_equal(programm, state.output):
+            return False
+
+def puzzle2(registers, programm):
+    initial_register_a = 0
+    while True:
+        print("Test", initial_register_a)
+        if test_programm((initial_register_a, registers[1], registers[2]), programm ):
+            return initial_register_a
+        initial_register_a += 1
 
 def perform_division(operand, registers ):
     numerator =  registers[0]
@@ -59,4 +105,5 @@ def resolve_combo(opcode: int, registers: tuple[int,int,int]) -> int:
 
 print(initial_registers)
 print(programm)
-print(",".join([str(x) for x in run_programm(initial_registers, programm)]))
+print("Solution 1", ",".join([str(x) for x in run_programm(initial_registers, programm)]))
+print("Solution 2", puzzle2(initial_registers, programm) )
