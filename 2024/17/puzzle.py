@@ -102,57 +102,48 @@ print("Solution 1", ",".join([str(x) for x in run_programm(initial_registers, pr
 
 
 def compute_greedy(programm):
-    current_byte = 0
+    index_reversed_programm = 0
     reversed_programm = list( reversed(programm))
     last_computed_value = dict()
     current_a = 0
-    while current_byte < len(programm):
+    while index_reversed_programm < len(programm):
         current_a = current_a << 3
         next_byte = get_next_byte_for_output(
-            reversed_programm[current_byte],
+            reversed_programm[index_reversed_programm],
             current_a,
             programm,
-            last_computed_value[current_byte] +1 if current_byte in last_computed_value else 0
+            last_computed_value[index_reversed_programm] +1 if index_reversed_programm in last_computed_value else 0
         )
         if not next_byte:
-            print("Next Byte not possible", current_byte)
-            if current_byte in last_computed_value:
-                last_computed_value.pop(current_byte)
-            current_byte -= 1
+            print("Next Byte not possible", index_reversed_programm)
+            if index_reversed_programm in last_computed_value:
+                last_computed_value.pop(index_reversed_programm)
+            index_reversed_programm -= 1
             current_a = current_a >> 6
-            if current_byte < 0:
+            if index_reversed_programm < 0:
                 raise Exception("Current Byte Fell below 0 no solution possible")
         else:
-            last_computed_value[current_byte] = next_byte
+            print("Computed", f"idx {index_reversed_programm}", f"next_programm_byte {next_byte}", f"Output {reversed_programm[index_reversed_programm]}", run_programm((current_a,0,0), programm), run_programm(((current_a << 3) | next_byte,0,0), programm))
+            last_computed_value[index_reversed_programm] = next_byte
             current_a = current_a|next_byte
-            current_byte += 1
+            # output = run_programm((current_a, 0,0), programm)
+            #if output != programm[-len(output):]:
+            #    print(current_byte, next_byte, current_a, output, run_programm((current_a >> 3, 0,0), programm))
+            index_reversed_programm += 1
     return current_a
-
-
-def try_correct(a, programm, index):
-    a_1 = (a >> (index * 3 +1)) << 3
-    next_byte = get_next_byte_for_output(programm[index], a_1, programm)
-    if next_byte:
-        mask = ~(~0  << index)
-        return ((a_1 | next_byte ) << index)  |  (a & mask)
 
 
 def puzzle2(programm):
     return compute_greedy(programm)
-    
-
-
-
 
 def get_next_byte_for_output(output, current_a, programm, start=0): 
     for b in range(start, 256):
        next_a = current_a | b
        out = run_programm((next_a, 0,0), programm[:-2])
-       if out[-1] == output:
+       assert len(out ) == 1
+       if out[0] == output:
            return b
     return None 
-    
-
 
 a = puzzle2(programm)
 output = run_programm((a,0,0), programm)
