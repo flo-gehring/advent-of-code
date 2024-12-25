@@ -125,18 +125,6 @@ def compute_greedy(programm):
         else:
             last_computed_value[current_byte] = next_byte
             current_a = current_a|next_byte
-            output = run_programm((current_a, 0,0), programm)
-            mismatch = [ x[0] for x in enumerate(zip(output, programm)) if x[1][0] != x[1][1]]
-            while mismatch:
-                current_a= try_correct(current_a, programm, mismatch[0])
-                if not current_a:
-                    if current_byte in last_computed_value:
-                        last_computed_value.pop(current_byte)
-                    current_byte -= 1
-                    continue
-                output = run_programm((current_a, 0,0), programm)
-                mismatch =  [ x[0] for x in enumerate(zip(output, programm)) if x[1][0] != x[1][1]]
-            
             current_byte += 1
     return current_a
 
@@ -147,8 +135,6 @@ def try_correct(a, programm, index):
     if next_byte:
         mask = ~(~0  << index)
         return ((a_1 | next_byte ) << index)  |  (a & mask)
-
-
 
 
 def puzzle2(programm):
