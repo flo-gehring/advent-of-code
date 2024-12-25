@@ -1,9 +1,10 @@
 from dataclasses import dataclass
-path = "2024/17/input_test.txt"
+path = "2024/17/input.txt"
 
 
 def read_register(line: str) -> int:
     return int(line.split(":")[1].strip())
+
 def read_input(path: str) -> tuple[tuple[int,int,int],  list[int]]:
     input = open(path, "r").readlines()
     return (
@@ -18,7 +19,6 @@ class State:
     programmCounter: int
     registers: tuple[int,int]
     output: list[int]
-
 
 def step(programm: list[int], state:State) -> State:
         programm_counter = state.programmCounter
@@ -60,7 +60,6 @@ def run_programm(registers: tuple[int,int,int], programm: list[int]) -> list[int
         state = step(programm, state)
     return state.output     
 
-
 def can_equal(programm: list[int], output: list[int]):
     if len(output)  > len(programm):
         return False
@@ -81,14 +80,6 @@ def  test_programm(registers, programm ) -> bool:
         elif not can_equal(programm, state.output):
             return False
 
-def puzzle2(registers, programm):
-    initial_register_a = 0
-    while True:
-        print("Test", initial_register_a)
-        if test_programm((initial_register_a, registers[1], registers[2]), programm ):
-            return initial_register_a
-        initial_register_a += 1
-
 def perform_division(operand, registers ):
     numerator =  registers[0]
     combo = resolve_combo(operand, registers)
@@ -106,4 +97,79 @@ def resolve_combo(opcode: int, registers: tuple[int,int,int]) -> int:
 print(initial_registers)
 print(programm)
 print("Solution 1", ",".join([str(x) for x in run_programm(initial_registers, programm)]))
-print("Solution 2", puzzle2(initial_registers, programm) )
+# Test bis 6888574 hat nichts gebrachtl
+#print("Solution 2", puzzle2(initial_registers, programm) ) 
+
+
+def compute_greedy(programm):
+    current_byte = 0
+    reversed_programm = list( reversed(programm))
+    last_computed_value = dict()
+    current_a = 0
+    while current_byte < len(programm):
+        current_a = current_a << 3
+        next_byte = get_next_byte_for_output(
+            reversed_programm[current_byte],
+            current_a,
+            programm,
+            last_computed_value[current_byte] +1 if current_byte in last_computed_value else 0
+        )
+        if not next_byte:
+            print("Next Byte not possible", current_byte)
+            if current_byte in last_computed_value:
+                last_computed_value.pop(current_byte)
+            current_byte -= 1
+            current_a = current_a >> 6
+            if current_byte < 0:
+                raise Exception("Current Byte Fell below 0 no solution possible")
+        else:
+            last_computed_value[current_byte] = next_byte
+            current_a = current_a|next_byte
+            output = run_programm((current_a, 0,0), programm)
+            mismatch = [ x[0] for x in enumerate(zip(output, programm)) if x[1][0] != x[1][1]]
+            while mismatch:
+                current_a= try_correct(current_a, programm, mismatch[0])
+                if not current_a:
+                    if current_byte in last_computed_value:
+                        last_computed_value.pop(current_byte)
+                    current_byte -= 1
+                    continue
+                output = run_programm((current_a, 0,0), programm)
+                mismatch =  [ x[0] for x in enumerate(zip(output, programm)) if x[1][0] != x[1][1]]
+            
+            current_byte += 1
+    return current_a
+
+
+def try_correct(a, programm, index):
+    a_1 = (a >> (index * 3 +1)) << 3
+    next_byte = get_next_byte_for_output(programm[index], a_1, programm)
+    if next_byte:
+        mask = ~(~0  << index)
+        return ((a_1 | next_byte ) << index)  |  (a & mask)
+
+
+
+
+def puzzle2(programm):
+    return compute_greedy(programm)
+    
+
+
+
+
+def get_next_byte_for_output(output, current_a, programm, start=0): 
+    for b in range(start, 256):
+       next_a = current_a | b
+       out = run_programm((next_a, 0,0), programm[:-2])
+       if out[-1] == output:
+           return b
+    return None 
+    
+
+
+a = puzzle2(programm)
+output = run_programm((a,0,0), programm)
+print("P", programm)
+print("O", output)
+print("Len Prog", len(programm), "Mismatch", [ x[0] for x in enumerate(zip(output, programm)) if x[1][0] != x[1][1]])
