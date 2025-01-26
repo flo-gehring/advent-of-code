@@ -13,3 +13,5 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
 USER $USERNAME
 RUN pip install --user --upgrade pip 
+COPY requirements.txt . 
+RUN pip install --user -r requirements.txt
