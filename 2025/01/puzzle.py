@@ -30,8 +30,6 @@ print("---------------")
 curr_dial = 50
 zero_passed =0
 for (direction, amount) in turns:
-    print("currdial", curr_dial)
-    print(direction, amount)
     effective_rotation = amount % (dial_max +1)
     zeros = 0
     if direction == "L":
@@ -44,9 +42,6 @@ for (direction, amount) in turns:
            zeros += 1
         zeros += amount // 100
         curr_dial = (curr_dial + amount) % (dial_max +1)
-    print("next", curr_dial)
-    print("zeros ", zeros)
-    print("---------")
     zero_passed += zeros
 print(zero_passed)
 
