@@ -1,0 +1,3 @@
+[submodule "advent-of-code-input"]
+	path = advent-of-code-input
+	url = git@github.com:flo-gehring/advent-of-code-input.git
