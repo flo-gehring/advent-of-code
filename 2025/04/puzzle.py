@@ -2,8 +2,6 @@ f  = open("advent-of-code-input/2025/04/input.txt" )
 grid = [[cell for cell in line.strip()] for line in f.readlines()]
 
 
-accessible_rolls = 0
-
 def get_accessible_rolls(grid):
     accessible_rolls = []
     for (y, row) in enumerate(grid):
@@ -26,11 +24,7 @@ def get_accessible_rolls(grid):
                 accessible_rolls.append((y,x))
     return accessible_rolls
     
-print(len(get_accessible_rolls(grid)))
-                
-
-from copy import deepcopy
-
+print("Part 1", len(get_accessible_rolls(grid)))
 
 total_rolls_removed = 0 
 while True:
@@ -40,4 +34,4 @@ while True:
     for (y,x) in removed_rolls:
         grid[y][x] = "."
     total_rolls_removed += len(removed_rolls)
-print(total_rolls_removed)
+print("Part 2", total_rolls_removed)
