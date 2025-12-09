@@ -3,7 +3,7 @@ from math import sqrt
 from functools import reduce
 
 base_path = "advent-of-code-input/2025/08/" 
-test_input = False
+test_input = True
 path = base_path + ("test.txt" if test_input else "input.txt")
 f  = open( path)
 
@@ -64,8 +64,7 @@ def merge_circuits(id1, id2):
 for i in range(num_to_connect):
     (vec1, vec2) = distances[i][0]
     merge_circuits(vec1, vec2)
-    print("Connect" , vectors[int(vec1)], vectors[int(vec2)])   
-
+    
 
 cicuit_len = [
     len(c) for c in circuits
@@ -74,4 +73,18 @@ cicuit_len = [
 cicuit_len.sort(reverse=True)
 print(cicuit_len)
 top_n = cicuit_len[:3]
-print(reduce(lambda x,y: x*y,top_n, 1))
+print("Part 1", reduce(lambda x,y: x*y,top_n, 1))
+
+
+vec1 = None
+vec2 = None
+for i in range(num_to_connect, len(distances)):
+    (vec1, vec2) = distances[i][0]
+    merge_circuits(vec1, vec2)
+    if(len(circuits) == 1):
+        break
+
+print("Part2", vectors[int(vec1)].x *vectors[int(vec2)].x )
+        
+
+    
