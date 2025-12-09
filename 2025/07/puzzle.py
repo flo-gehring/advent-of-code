@@ -58,7 +58,6 @@ timeline = [initial_timeline]
 last_timeline = initial_timeline
 out_of_bound_timelines = 0
 for i in range(1, len(grid)):
-
     (out_of_bounds, last_timeline)  = move_timelines(i, timeline,  grid)
     out_of_bound_timelines += out_of_bounds
     timeline.append(last_timeline)
